@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Base de Datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: laboratorio-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-lab_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lab_password}
+      POSTGRES_DB: ${DB_NAME:-laboratorio_db}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=es_ES.UTF-8"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - laboratorio-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-lab_user} -d ${DB_NAME:-laboratorio_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Backend Node.js + Express
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laboratorio-backend
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3001}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-laboratorio_db}
+      DB_USER: ${DB_USER:-lab_user}
+      DB_PASSWORD: ${DB_PASSWORD:-lab_password}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_EXPIRE: ${JWT_EXPIRE:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - laboratorio-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    command: npm run dev
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: laboratorio-frontend
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:3001}
+      REACT_APP_ENVIRONMENT: ${REACT_APP_ENVIRONMENT:-development}
+      REACT_APP_LOG_LEVEL: ${REACT_APP_LOG_LEVEL:-info}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - laboratorio-network
+    restart: unless-stopped
+    command: npm start
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  laboratorio-network:
+    driver: bridge
