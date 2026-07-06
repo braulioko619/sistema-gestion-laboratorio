@@ -1,0 +1,149 @@
+.audit-container {
+  padding: 20px 0;
+}
+
+.audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.audit-header h1 {
+  color: #2c3e50;
+  margin: 0;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-secondary {
+  background-color: #95a5a6;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+.filters-section {
+  margin-bottom: 30px;
+}
+
+.filters-section h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.logs-section {
+  margin-bottom: 20px;
+}
+
+.logs-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.log-entry {
+  border: 1px solid #ecf0f1;
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #f8f9fa;
+}
+
+.log-header {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.log-action {
+  background-color: #3498db;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.log-entity {
+  background-color: #e8f4f8;
+  color: #2c3e50;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.log-time {
+  color: #7f8c8d;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.log-details {
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.log-details p {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #2c3e50;
+  word-break: break-all;
+}
+
+.log-details strong {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .audit-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .export-buttons {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .log-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .log-time {
+    margin-left: 0;
+  }
+}
