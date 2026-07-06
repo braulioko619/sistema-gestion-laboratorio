@@ -31,6 +31,16 @@ app.use('/api', apiLimiter);
 // Auditoria (trazabilidad de cambios)
 app.use(auditMiddleware);
 
+// Health check endpoint (before rate limiting to always be accessible)
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'API is running',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Rutas de la API
 app.use('/api', routes);
 
