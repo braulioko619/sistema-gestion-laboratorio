@@ -5,6 +5,10 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Documents from './pages/Documents';
 import Quality from './pages/Quality';
+import NonConformities from './pages/NonConformities';
+import Equipment from './pages/Equipment';
+import Personnel from './pages/Personnel';
+import InternalAudits from './pages/InternalAudits';
 import Audit from './pages/Audit';
 import './index.css';
 
@@ -43,6 +47,10 @@ function App() {
             <Routes>
               <Route path="/documents" element={<Documents />} />
               <Route path="/quality" element={<Quality />} />
+              <Route path="/nonconformities" element={<NonConformities />} />
+              <Route path="/equipment" element={<Equipment />} />
+              <Route path="/personnel" element={<Personnel />} />
+              <Route path="/internal-audits" element={<InternalAudits />} />
               <Route path="/audit" element={<Audit />} />
               <Route path="/" element={<Navigate to="/documents" />} />
             </Routes>

@@ -5,17 +5,21 @@ const { authMiddleware, authorizeRole } = require('../middleware/auth');
 
 router.use(authMiddleware);
 
-router.get('/', QualityController.getQualityRecords);
+const ROLES_REGISTRO = [
+  'administrador',
+  'jefe_laboratorio',
+  'supervisor',
+  'personal_calidad',
+];
+
+// Rutas documentadas en docs/API.md (las que usa el frontend)
+router.get('/records', QualityController.getQualityRecords);
+router.post('/records', authorizeRole(ROLES_REGISTRO), QualityController.createQualityRecord);
+router.get('/indicators', QualityController.getQualityIndicators);
 router.get('/summary', QualityController.getQualitySummary);
-router.post(
-  '/',
-  authorizeRole([
-    'administrador',
-    'jefe_laboratorio',
-    'supervisor',
-    'personal_calidad',
-  ]),
-  QualityController.createQualityRecord
-);
+
+// Rutas legadas (compatibilidad con clientes previos)
+router.get('/', QualityController.getQualityRecords);
+router.post('/', authorizeRole(ROLES_REGISTRO), QualityController.createQualityRecord);
 
 module.exports = router;

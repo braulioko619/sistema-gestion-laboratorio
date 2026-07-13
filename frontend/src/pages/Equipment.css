@@ -1,0 +1,149 @@
+.eq-container {
+  padding: 20px 0;
+}
+
+.eq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.eq-alertas {
+  margin-bottom: 20px;
+  border-left: 4px solid #e67e22;
+  padding: 16px;
+}
+
+.eq-form {
+  margin-bottom: 20px;
+}
+
+.eq-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+}
+
+.eq-filters {
+  margin-bottom: 15px;
+}
+
+.eq-filters select {
+  margin-left: 8px;
+  padding: 6px;
+}
+
+.eq-row {
+  cursor: pointer;
+}
+
+.eq-row:hover {
+  background: #f5f7fa;
+}
+
+.eq-fecha-vencida {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.eq-fecha-proxima {
+  color: #b9770e;
+  font-weight: 600;
+}
+
+/* Badges de estado del equipo */
+.badge-eq-operativo {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+.badge-eq-en_calibracion {
+  background: #eaf2fd;
+  color: #2471a3;
+}
+
+.badge-eq-en_mantenimiento {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+.badge-eq-fuera_servicio {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.badge-eq-dado_de_baja {
+  background: #f2f3f4;
+  color: #566573;
+}
+
+.badge-eq-vencido {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.badge-eq-proximo {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+/* Modal */
+.eq-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.eq-modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 760px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.eq-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.eq-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.eq-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 4px 16px;
+  margin-bottom: 12px;
+}
+
+.eq-eventos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.eq-evento-form {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 14px;
+  margin: 10px 0;
+}

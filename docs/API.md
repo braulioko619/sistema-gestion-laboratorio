@@ -400,6 +400,189 @@ curl -H "Authorization: Bearer <token>" \
 
 ---
 
+## ⚠️ No Conformidades - Non-Conformities
+
+Módulo de trabajo no conforme y acciones correctivas (ISO/IEC 17025 cláusulas 7.10 y 8.7).
+
+**Flujo de estados:** `abierta` → `en_tratamiento` → `en_verificacion` → `cerrada`
+
+**Creación automática:** todo registro de calidad con estado `no_conforme` genera automáticamente una NC vinculada (fuente `registro_calidad`).
+
+### POST /nonconformities
+**Descripción:** Registrar no conformidad manualmente
+
+**Permisos:** administrador, jefe_laboratorio, supervisor, personal_calidad
+
+```json
+// Request
+{
+  "descripcion": "Se detectó desviación en el procedimiento de pesaje",
+  "fuente": "auditoria_interna",
+  "clasificacion": "mayor",
+  "correccion_inmediata": "Se detuvo el ensayo en curso",
+  "decision_trabajo": "repetir"
+}
+
+// Response (201)
+{
+  "success": true,
+  "message": "No conformidad NC-2026-001 registrada correctamente",
+  "data": { "id": "...", "codigo": "NC-2026-001", "estado": "abierta" }
+}
+```
+
+**Valores de `fuente`:** `registro_calidad`, `auditoria_interna`, `queja_cliente`, `proveedor`, `otro`
+
+**Valores de `decision_trabajo`:** `continuar`, `suspender`, `repetir`, `notificar_cliente` (requisito 7.10.1c)
+
+### GET /nonconformities
+**Descripción:** Listar no conformidades
+
+**Parámetros query:** `estado`, `clasificacion`, `fuente`, `fecha_inicio`, `fecha_fin`, `page`, `limit`
+
+### GET /nonconformities/summary
+**Descripción:** KPIs — conteos por estado y clasificación, NC vencidas (fecha compromiso pasada sin cerrar) y tiempo medio de cierre en días.
+
+### GET /nonconformities/:id
+**Descripción:** Detalle con registrador, responsable, verificador y registro de calidad de origen.
+
+### PUT /nonconformities/:id
+**Descripción:** Actualizar tratamiento (análisis de causa raíz, acción correctiva, responsable, fecha compromiso). No se puede modificar una NC cerrada. Al registrar análisis + acción, la NC pasa automáticamente a `en_tratamiento`. Enviar `"estado": "en_verificacion"` cuando la acción esté implementada.
+
+**Permisos:** administrador, jefe_laboratorio, supervisor, personal_calidad
+
+### POST /nonconformities/:id/verify
+**Descripción:** Verificación de eficacia (requisito 8.7.1e). Requiere análisis de causa raíz y acción correctiva registrados previamente.
+
+**Permisos:** administrador, jefe_laboratorio, personal_calidad
+
+```json
+// Request
+{
+  "verificacion_eficacia": "Se revisaron 3 lotes posteriores sin recurrencia",
+  "eficaz": true
+}
+```
+
+Si `eficaz` es `true` la NC se cierra; si es `false` vuelve a `en_tratamiento`.
+
+---
+
+## 🔬 Equipos - Equipment
+
+Módulo de gestión de equipamiento y calibraciones (ISO/IEC 17025 cláusulas 6.4 y 6.5).
+
+### POST /equipment
+**Descripción:** Registrar equipo (código interno manual, único)
+
+**Permisos:** administrador, jefe_laboratorio, supervisor, personal_calidad
+
+```json
+// Request
+{
+  "codigo": "BAL-001",
+  "nombre": "Balanza analítica",
+  "marca": "Sartorius",
+  "modelo": "BCA224",
+  "numero_serie": "0034567",
+  "ubicacion": "Sala de pesaje",
+  "responsable_id": "550e8400-...",
+  "fecha_ingreso": "2026-01-15"
+}
+```
+
+**Estados del equipo:** `operativo`, `en_calibracion`, `en_mantenimiento`, `fuera_servicio`, `dado_de_baja`
+
+### GET /equipment
+**Descripción:** Listar equipos. Query: `estado`, `search` (código/nombre/serie), `page`, `limit`
+
+### GET /equipment/alerts
+**Descripción:** Calibraciones, mantenimientos y verificaciones vencidos o por vencer. Query: `dias` (default: 60)
+
+### GET /equipment/:id
+**Descripción:** Detalle con historial completo de eventos (requisito 6.4.13)
+
+### PUT /equipment/:id
+**Descripción:** Actualizar datos generales o estado del equipo
+
+### POST /equipment/:id/events
+**Descripción:** Registrar calibración, mantenimiento o verificación intermedia
+
+```json
+// Request
+{
+  "tipo": "calibracion",
+  "fecha_realizacion": "2026-07-10",
+  "proveedor": "Lab Metrología Cert S.A.",
+  "certificado_numero": "CC-2026-4411",
+  "trazabilidad": "Patrón E2 trazable a INM, certificado vigente",
+  "resultado": "conforme",
+  "proxima_fecha": "2027-07-10"
+}
+```
+
+**Tipos:** `calibracion`, `mantenimiento`, `verificacion_intermedia`
+
+**Comportamiento automático:**
+- `proxima_fecha` actualiza la fecha programada correspondiente en el equipo (alimenta las alertas).
+- `resultado: "no_conforme"` genera una NC automática clasificación mayor (fuente `equipo`), sugiere suspender el trabajo y pasa el equipo a `fuera_servicio` (requisito 6.4.9).
+
+---
+
+## 👥 Personal - Personnel
+
+Expedientes de competencia y autorizaciones (ISO/IEC 17025 cláusula 6.2).
+
+**Permisos:** lectura — administrador, jefe_laboratorio, personal_calidad. Escritura — administrador, jefe_laboratorio.
+
+### GET /personnel
+Lista el personal activo con resumen: registros, evaluaciones de competencia y autorizaciones vigentes.
+
+### GET /personnel/alerts
+Autorizaciones y capacitaciones vencidas o por vencer (query `dias`, default 60) + personal sin evaluación de competencia.
+
+### GET /personnel/:userId
+Expediente completo: registros (6.2.5) y autorizaciones (6.2.6).
+
+### POST /personnel/:userId/records
+Agregar registro al expediente. Tipos: `formacion_academica`, `capacitacion`, `experiencia`, `evaluacion_competencia`. Campos: `descripcion`*, `fecha`*, `institucion`, `fecha_vencimiento`, `referencia_certificado`, `resultado` (aprobado/reprobado/pendiente), `observaciones`.
+
+### POST /personnel/:userId/authorizations
+Otorgar autorización para una actividad o método. Campos: `actividad`*, `fecha_autorizacion`*, `alcance`, `fecha_vencimiento`, `observaciones`. Queda registrado quién autorizó.
+
+### PUT /personnel/authorizations/:id/revoke
+Revocar una autorización vigente (con motivo en `observaciones`).
+
+---
+
+## 📋 Auditorías Internas - Internal Audits
+
+Programa de auditorías internas del SGC (ISO/IEC 17025 cláusula 8.8). **No confundir con `/audit`**, que es el log informático del sistema.
+
+**Permisos:** consulta — todos. Gestión — administrador, jefe_laboratorio, personal_calidad.
+
+### POST /internal-audits
+Planificar auditoría. Campos: `alcance`*, `fecha_planificada`*, `criterios`, `auditor_id` (interno) o `auditor_externo`* (al menos uno). Código correlativo AI-2026-001.
+
+### GET /internal-audits
+Listar (query: `estado`, `anio`, `page`, `limit`). Estados: `planificada`, `en_curso`, `completada`, `cancelada`.
+
+### GET /internal-audits/summary
+Resumen del programa anual (query `anio`): auditorías por estado y hallazgos por tipo.
+
+### GET /internal-audits/:id
+Detalle con hallazgos y sus NC vinculadas.
+
+### PUT /internal-audits/:id
+Actualizar. Para `estado: "completada"` exige `fecha_realizacion` y `conclusiones` (evidencia 8.8.2). No se modifican auditorías cerradas.
+
+### POST /internal-audits/:id/findings
+Registrar hallazgo. Tipos: `no_conformidad`, `observacion`, `oportunidad_mejora`. Campos: `descripcion`*, `clausula`, `clasificacion` (para NC).
+
+**Comportamiento automático:** el primer hallazgo pasa la auditoría a `en_curso`; un hallazgo `no_conformidad` genera NC vinculada (fuente `auditoria_interna`) que entra al flujo CAPA.
+
+---
+
 ## 🔍 Auditoría - Audit
 
 ### GET /audit/logs

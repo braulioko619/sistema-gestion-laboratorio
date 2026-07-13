@@ -1,0 +1,146 @@
+.pers-container {
+  padding: 20px 0;
+}
+
+.pers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.pers-alertas {
+  margin-bottom: 20px;
+  border-left: 4px solid #e67e22;
+  padding: 16px;
+}
+
+.pers-alerta-eval {
+  background: #fdecea;
+  color: #c0392b;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.pers-row {
+  cursor: pointer;
+}
+
+.pers-row:hover {
+  background: #f5f7fa;
+}
+
+.pers-email {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+.pers-detalle {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge-pers-vencido {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.badge-pers-proximo {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+.badge-auth-vigente {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+.badge-auth-vencida {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+.badge-auth-revocada {
+  background: #f2f3f4;
+  color: #566573;
+}
+
+.pers-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.pers-modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 820px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.pers-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pers-rol {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  font-weight: 400;
+}
+
+.pers-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.pers-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 16px;
+  padding-top: 12px;
+}
+
+.pers-form {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 14px;
+  margin: 10px 0;
+}
+
+.pers-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+}
+
+.pers-btn-revocar {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.pers-btn-revocar:hover {
+  background: #922b21;
+}

@@ -56,6 +56,46 @@ export const qualityAPI = {
   indicators: () => api.get('/quality/indicators'),
 };
 
+// NO CONFORMIDADES
+export const nonConformitiesAPI = {
+  list: (params) => api.get('/nonconformities', { params }),
+  get: (id) => api.get(`/nonconformities/${id}`),
+  summary: () => api.get('/nonconformities/summary'),
+  create: (data) => api.post('/nonconformities', data),
+  update: (id, data) => api.put(`/nonconformities/${id}`, data),
+  verify: (id, data) => api.post(`/nonconformities/${id}/verify`, data),
+};
+
+// EQUIPOS
+export const equipmentAPI = {
+  list: (params) => api.get('/equipment', { params }),
+  get: (id) => api.get(`/equipment/${id}`),
+  alerts: (params) => api.get('/equipment/alerts', { params }),
+  create: (data) => api.post('/equipment', data),
+  update: (id, data) => api.put(`/equipment/${id}`, data),
+  createEvent: (id, data) => api.post(`/equipment/${id}/events`, data),
+};
+
+// PERSONAL
+export const personnelAPI = {
+  list: () => api.get('/personnel'),
+  get: (userId) => api.get(`/personnel/${userId}`),
+  alerts: (params) => api.get('/personnel/alerts', { params }),
+  createRecord: (userId, data) => api.post(`/personnel/${userId}/records`, data),
+  createAuthorization: (userId, data) => api.post(`/personnel/${userId}/authorizations`, data),
+  revokeAuthorization: (id, data) => api.put(`/personnel/authorizations/${id}/revoke`, data),
+};
+
+// AUDITORÍAS INTERNAS
+export const internalAuditsAPI = {
+  list: (params) => api.get('/internal-audits', { params }),
+  get: (id) => api.get(`/internal-audits/${id}`),
+  summary: (params) => api.get('/internal-audits/summary', { params }),
+  create: (data) => api.post('/internal-audits', data),
+  update: (id, data) => api.put(`/internal-audits/${id}`, data),
+  createFinding: (id, data) => api.post(`/internal-audits/${id}/findings`, data),
+};
+
 // AUDIT
 export const auditAPI = {
   logs: (params) => api.get('/audit/logs', { params }),

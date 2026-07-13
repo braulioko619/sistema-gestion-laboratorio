@@ -4,6 +4,10 @@ const router = express.Router();
 router.use('/auth', require('./auth.routes'));
 router.use('/documents', require('./document.routes'));
 router.use('/quality', require('./quality.routes'));
+router.use('/nonconformities', require('./nonconformity.routes'));
+router.use('/equipment', require('./equipment.routes'));
+router.use('/personnel', require('./personnel.routes'));
+router.use('/internal-audits', require('./internalaudit.routes'));
 router.use('/users', require('./user.routes'));
 router.use('/audit', require('./audit.routes'));
 

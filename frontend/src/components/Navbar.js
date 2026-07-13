@@ -33,6 +33,18 @@ function Navbar() {
           <Link to="/quality" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
             ✅ Calidad
           </Link>
+          <Link to="/nonconformities" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+            ⚠️ No Conformidades
+          </Link>
+          <Link to="/equipment" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+            🔬 Equipos
+          </Link>
+          <Link to="/personnel" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+            👥 Personal
+          </Link>
+          <Link to="/internal-audits" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+            📋 Aud. Internas
+          </Link>
           <Link to="/audit" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
             🔍 Auditoría
           </Link>

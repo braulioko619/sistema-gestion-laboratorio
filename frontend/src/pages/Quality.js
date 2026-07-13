@@ -159,8 +159,8 @@ function Quality() {
                         {record.estado_cumplimiento}
                       </span>
                     </td>
-                    <td>{record.registrado_por}</td>
-                    <td>{new Date(record.created_at).toLocaleDateString()}</td>
+                    <td>{record.registrador?.nombre || record.registrado_por}</td>
+                    <td>{new Date(record.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>

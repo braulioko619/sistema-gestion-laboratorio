@@ -1,0 +1,177 @@
+.nc-container {
+  padding: 20px 0;
+}
+
+.nc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.nc-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.nc-summary-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.nc-summary-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.nc-summary-danger .nc-summary-value {
+  color: #c0392b;
+}
+
+.nc-form {
+  margin-bottom: 20px;
+}
+
+.nc-filters {
+  margin-bottom: 15px;
+}
+
+.nc-filters select {
+  margin-left: 8px;
+  padding: 6px;
+}
+
+.nc-row {
+  cursor: pointer;
+}
+
+.nc-row:hover {
+  background: #f5f7fa;
+}
+
+.nc-desc {
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Badges de estado */
+.badge-nc-abierta {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.badge-nc-en_tratamiento {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+.badge-nc-en_verificacion {
+  background: #eaf2fd;
+  color: #2471a3;
+}
+
+.badge-nc-cerrada {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+/* Badges de clasificación */
+.badge-clasif-menor {
+  background: #f2f3f4;
+  color: #566573;
+}
+
+.badge-clasif-mayor {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+.badge-clasif-critica {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+/* Modal de detalle */
+.nc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.nc-modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.nc-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.nc-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.nc-origen {
+  background: #f5f7fa;
+  border-left: 3px solid #2471a3;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.nc-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-secondary {
+  background: #2471a3;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #1a5276;
+}
+
+.nc-verify {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 20px;
+  padding-top: 16px;
+}
+
+.nc-closed-info {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 20px;
+  padding-top: 16px;
+}
