@@ -38,6 +38,18 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Usado por el callback de SSO Microsoft: ya tenemos los tokens, falta el perfil
+  const loginWithToken = async (token, refreshToken) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('refreshToken', refreshToken);
+
+    const response = await authAPI.profile();
+    const userData = response.data.data;
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    return userData;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
@@ -46,7 +58,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, loginWithToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

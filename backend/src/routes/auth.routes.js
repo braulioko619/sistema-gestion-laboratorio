@@ -16,4 +16,8 @@ router.post('/refresh', authLimiter, AuthController.refreshToken);
 router.post('/logout', authMiddleware, AuthController.logout);
 router.get('/profile', authMiddleware, AuthController.getProfile);
 
+// SSO con Microsoft 365
+router.get('/microsoft/login', AuthController.microsoftLogin);
+router.get('/microsoft/callback', AuthController.microsoftCallback);
+
 module.exports = router;

@@ -1,6 +1,92 @@
 const { User, Role } = require('../models');
 const { generateToken, generateRefreshToken, comparePassword, hashPassword } = require('../utils/auth');
 const logger = require('../config/logger');
+const { getMsalClient, GRAPH_SCOPES, REDIRECT_URI } = require('../config/msal');
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+// Redirige a Microsoft para iniciar el login SSO
+exports.microsoftLogin = async (req, res) => {
+  const msalClient = getMsalClient();
+  if (!msalClient) {
+    return res.status(503).json({
+      success: false,
+      error: {
+        code: 'SSO_NOT_CONFIGURED',
+        message: 'El login con Microsoft no está configurado en este servidor',
+      },
+    });
+  }
+
+  try {
+    const authUrl = await msalClient.getAuthCodeUrl({
+      scopes: GRAPH_SCOPES,
+      redirectUri: REDIRECT_URI,
+    });
+    res.redirect(authUrl);
+  } catch (error) {
+    logger.error(`[AUTH] Error generando URL de Microsoft: ${error.message}`);
+    res.redirect(`${FRONTEND_URL}/login?error=sso_error`);
+  }
+};
+
+// Callback: intercambia el code, obtiene el perfil de Graph y emite el JWT propio
+exports.microsoftCallback = async (req, res) => {
+  const msalClient = getMsalClient();
+  if (!msalClient) {
+    return res.redirect(`${FRONTEND_URL}/login?error=sso_not_configured`);
+  }
+
+  try {
+    const tokenResponse = await msalClient.acquireTokenByCode({
+      code: req.query.code,
+      scopes: GRAPH_SCOPES,
+      redirectUri: REDIRECT_URI,
+    });
+
+    const graphRes = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: { Authorization: `Bearer ${tokenResponse.accessToken}` },
+    });
+    if (!graphRes.ok) {
+      throw new Error(`Graph API respondió ${graphRes.status}`);
+    }
+    const profile = await graphRes.json();
+    const email = (profile.mail || profile.userPrincipalName || '').toLowerCase();
+
+    if (!email) {
+      throw new Error('La cuenta de Microsoft no tiene un email asociado');
+    }
+
+    let user = await User.findOne({ where: { email }, include: [{ model: Role, as: 'rol' }] });
+
+    if (!user) {
+      const defaultRole = await Role.findOne({ where: { nombre: 'usuario_lectura' } });
+      user = await User.create({
+        email,
+        password: null,
+        nombre: profile.givenName || profile.displayName || email,
+        apellido: profile.surname || '',
+        role_id: defaultRole.id,
+        auth_provider: 'microsoft',
+      });
+      user = await User.findByPk(user.id, { include: [{ model: Role, as: 'rol' }] });
+    }
+
+    await user.update({ ultimo_acceso: new Date() });
+
+    const token = generateToken(user.id, user.email, user.rol.nombre);
+    const refreshToken = generateRefreshToken(user.id);
+
+    logger.info(`[AUTH] Login SSO exitoso: ${email}`);
+
+    res.redirect(
+      `${FRONTEND_URL}/sso-callback?token=${encodeURIComponent(token)}&refreshToken=${encodeURIComponent(refreshToken)}`
+    );
+  } catch (error) {
+    logger.error(`[AUTH] Error en callback de Microsoft: ${error.message}`);
+    res.redirect(`${FRONTEND_URL}/login?error=sso_error`);
+  }
+};
 
 // Registrar nuevo usuario
 exports.register = async (req, res) => {
