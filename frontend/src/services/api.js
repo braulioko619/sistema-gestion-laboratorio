@@ -37,7 +37,10 @@ export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (data) => api.post('/auth/register', data),
   refresh: (refreshToken) => api.post('/auth/refresh', { refreshToken }),
+  profile: () => api.get('/auth/profile'),
 };
+
+export const MICROSOFT_LOGIN_URL = `${API_BASE_URL}/api/auth/microsoft/login`;
 
 // DOCUMENTS
 export const documentsAPI = {
@@ -47,12 +50,23 @@ export const documentsAPI = {
   update: (id, data) => api.put(`/documents/${id}`, data),
   publish: (id, data) => api.post(`/documents/${id}/publish`, data),
   versions: (id) => api.get(`/documents/${id}/versions`),
+  authorizations: (id) => api.get(`/documents/${id}/authorizations`),
+  grantAuthorization: (id, data) => api.post(`/documents/${id}/authorizations`, data),
+  revokeAuthorization: (id, authorizationId, data) => api.patch(`/documents/${id}/authorizations/${authorizationId}/revoke`, data),
+  downloadAttachment: (documentId, attachmentId) => api.get(
+    `/documents/${documentId}/attachments/${attachmentId}/download`,
+    { responseType: 'blob' }
+  ),
 };
 
 // QUALITY
 export const qualityAPI = {
   records: (params) => api.get('/quality/records', { params }),
   createRecord: (data) => api.post('/quality/records', data),
+  downloadAttachment: (recordId, attachmentId) => api.get(
+    `/quality/records/${recordId}/attachments/${attachmentId}/download`,
+    { responseType: 'blob' }
+  ),
   indicators: () => api.get('/quality/indicators'),
 };
 
@@ -105,6 +119,82 @@ export const auditAPI = {
 // USERS
 export const usersAPI = {
   list: () => api.get('/users'),
+};
+
+// CLIENTES (Laboratorio de Calibraciones)
+export const clientsAPI = {
+  list: (params) => api.get('/clients', { params }),
+  get: (id) => api.get(`/clients/${id}`),
+  create: (data) => api.post('/clients', data),
+  update: (id, data) => api.put(`/clients/${id}`, data),
+};
+
+// INSTRUMENTOS DE CLIENTE (Laboratorio de Calibraciones)
+export const clientInstrumentsAPI = {
+  list: (clientId, params) => api.get(`/clients/${clientId}/instruments`, { params }),
+  get: (clientId, id) => api.get(`/clients/${clientId}/instruments/${id}`),
+  alerts: (params) => api.get('/clients/instruments/alerts', { params }),
+  create: (clientId, data) => api.post(`/clients/${clientId}/instruments`, data),
+  update: (id, data) => api.put(`/clients/instruments/${id}`, data),
+};
+
+// ÓRDENES DE TRABAJO (Laboratorio de Calibraciones)
+export const workOrdersAPI = {
+  list: (params) => api.get('/work-orders', { params }),
+  get: (id) => api.get(`/work-orders/${id}`),
+  create: (data) => api.post('/work-orders', data),
+  updateEstado: (id, data) => api.put(`/work-orders/${id}/estado`, data),
+  addItem: (id, data) => api.post(`/work-orders/${id}/items`, data),
+  updateItem: (itemId, data) => api.put(`/work-orders/items/${itemId}`, data),
+};
+
+// CERTIFICADOS DE CALIBRACIÓN (Laboratorio de Calibraciones)
+export const certificatesAPI = {
+  upload: (itemId, formData) => api.post(`/work-orders/items/${itemId}/certificate`, formData),
+  updateEstado: (id, data) => api.put(`/work-orders/certificates/${id}/estado`, data),
+  send: (id, data) => api.post(`/work-orders/certificates/${id}/send`, data),
+  download: (id) => api.get(`/work-orders/certificates/${id}/download`, { responseType: 'blob' }),
+};
+
+// DIRECCIONES DE CLIENTE (Laboratorio de Calibraciones)
+export const clientAddressesAPI = {
+  create: (clientId, data) => api.post(`/clients/${clientId}/addresses`, data),
+  update: (id, data) => api.put(`/clients/addresses/${id}`, data),
+  remove: (id) => api.delete(`/clients/addresses/${id}`),
+};
+
+// CONTACTOS DE CLIENTE (Laboratorio de Calibraciones)
+export const clientContactsAPI = {
+  create: (clientId, data) => api.post(`/clients/${clientId}/contacts`, data),
+  update: (id, data) => api.put(`/clients/contacts/${id}`, data),
+  remove: (id) => api.delete(`/clients/contacts/${id}`),
+};
+
+// DOCUMENTOS COMERCIALES: órdenes de compra, facturas y notas de crédito
+export const commercialDocumentsAPI = {
+  list: (params) => api.get('/commercial-documents', { params }),
+  get: (id) => api.get(`/commercial-documents/${id}`),
+  create: (formData) => api.post('/commercial-documents', formData),
+  update: (id, data) => api.put(`/commercial-documents/${id}`, data),
+  download: (id) => api.get(`/commercial-documents/${id}/download`, { responseType: 'blob' }),
+};
+
+// TARIFARIO (Laboratorio de Calibraciones)
+export const priceListAPI = {
+  list: (params) => api.get('/price-list', { params }),
+  create: (data) => api.post('/price-list', data),
+  update: (id, data) => api.put(`/price-list/${id}`, data),
+};
+
+// COTIZACIONES (Laboratorio de Calibraciones)
+export const quotesAPI = {
+  list: (params) => api.get('/quotes', { params }),
+  get: (id) => api.get(`/quotes/${id}`),
+  create: (data) => api.post('/quotes', data),
+  update: (id, data) => api.put(`/quotes/${id}`, data),
+  updateEstado: (id, data) => api.put(`/quotes/${id}/estado`, data),
+  history: (id) => api.get(`/quotes/${id}/history`),
+  downloadPdf: (id) => api.get(`/quotes/${id}/pdf`, { responseType: 'blob' }),
 };
 
 export default api;
