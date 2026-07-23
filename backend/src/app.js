@@ -22,19 +22,27 @@ app.use(helmet({
   contentSecurityPolicy: false,            // CSP la maneja el frontend (React)
 }));
 
-// CORS antes de cualquier ruta para que los OPTIONS preflight funcionen
-const allowedOrigins = [
-  process.env.CORS_ORIGIN || 'http://localhost:3000',
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-];
+// CORS antes de cualquier ruta para que los OPTIONS preflight funcionen.
+// CORS_ORIGIN admite uno o varios orígenes separados por coma
+// (ej: "https://sgl.tuempresa.com,https://sgl-staging.tuempresa.com").
+// A diferencia de la versión anterior, los orígenes que no están en la
+// lista se RECHAZAN siempre, también en desarrollo: si necesitas otro
+// origen local, agrégalo explícitamente a CORS_ORIGIN en el .env.
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Permitir requests sin origin (curl, Postman, same-origin)
+      // Permitir requests sin origin (curl, Postman, llamadas same-origin)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      callback(null, true); // En desarrollo, permitir todo
+      const corsError = new Error(`Origen no permitido por CORS: ${origin}`);
+      corsError.status = 403;
+      corsError.code = 'CORS_NOT_ALLOWED';
+      callback(corsError);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
