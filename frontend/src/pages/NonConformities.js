@@ -49,7 +49,7 @@ function NonConformities() {
   const [verifyData, setVerifyData] = useState({ verificacion_eficacia: '', eficaz: '' });
 
   const puedeVerificar = ['administrador', 'jefe_laboratorio', 'personal_calidad'].includes(
-    user?.role
+    user?.rol
   );
 
   const fetchData = useCallback(async () => {
@@ -159,7 +159,7 @@ function NonConformities() {
   return (
     <div className="nc-container">
       <div className="nc-header">
-        <h1>⚠️ No Conformidades</h1>
+        <h1>No Conformidades</h1>
         <button onClick={() => setShowForm(!showForm)} className="btn-primary">
           {showForm ? '✕ Cancelar' : '➕ Nueva NC'}
         </button>

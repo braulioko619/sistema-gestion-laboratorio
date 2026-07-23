@@ -49,7 +49,7 @@ function InternalAudits() {
   const [formCierre, setFormCierre] = useState({ fecha_realizacion: '', conclusiones: '' });
 
   const puedeGestionar = ['administrador', 'jefe_laboratorio', 'personal_calidad'].includes(
-    user?.role
+    user?.rol
   );
 
   const fetchData = useCallback(async () => {
@@ -162,7 +162,7 @@ function InternalAudits() {
   return (
     <div className="ia-container">
       <div className="ia-header">
-        <h1>📋 Auditorías Internas</h1>
+        <h1>Auditorías Internas</h1>
         {puedeGestionar && (
           <button onClick={() => setShowForm(!showForm)} className="btn-primary">
             {showForm ? '✕ Cancelar' : '➕ Planificar auditoría'}

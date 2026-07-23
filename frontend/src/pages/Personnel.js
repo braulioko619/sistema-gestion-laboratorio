@@ -41,7 +41,7 @@ function Personnel() {
   const [formRegistro, setFormRegistro] = useState(FORM_REGISTRO_VACIO);
   const [formAuth, setFormAuth] = useState(FORM_AUTH_VACIO);
 
-  const puedeEditar = ['administrador', 'jefe_laboratorio'].includes(user?.role);
+  const puedeEditar = ['administrador', 'jefe_laboratorio'].includes(user?.rol);
 
   const fetchData = async () => {
     try {
@@ -145,7 +145,7 @@ function Personnel() {
   return (
     <div className="pers-container">
       <div className="pers-header">
-        <h1>👥 Personal y Competencias</h1>
+        <h1>Personal y Competencias</h1>
       </div>
 
       {error && (
