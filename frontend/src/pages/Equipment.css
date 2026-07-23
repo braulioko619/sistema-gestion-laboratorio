@@ -59,8 +59,8 @@
 }
 
 .badge-eq-en_calibracion {
-  background: #eaf2fd;
-  color: #2471a3;
+  background: var(--secondary-light);
+  color: var(--secondary-dark);
 }
 
 .badge-eq-en_mantenimiento {

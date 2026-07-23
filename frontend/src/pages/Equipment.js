@@ -23,6 +23,12 @@ const FORM_EQUIPO_VACIO = {
   modelo: '',
   numero_serie: '',
   ubicacion: '',
+  rango: '',
+  resolucion: '',
+  magnitud: '',
+  norma: '',
+  protocolo: '',
+  hoja_de_vida: '',
   responsable_id: '',
   fecha_ingreso: '',
   observaciones: '',
@@ -149,7 +155,7 @@ function Equipment() {
   return (
     <div className="eq-container">
       <div className="eq-header">
-        <h1>🔬 Equipos</h1>
+        <h1>Equipos</h1>
         <button onClick={() => setShowForm(!showForm)} className="btn-primary">
           {showForm ? '✕ Cancelar' : '➕ Nuevo Equipo'}
         </button>
@@ -257,6 +263,54 @@ function Equipment() {
                   type="text"
                   value={formEquipo.ubicacion}
                   onChange={(e) => setFormEquipo({ ...formEquipo, ubicacion: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Rango:</label>
+                <input
+                  type="text"
+                  value={formEquipo.rango}
+                  onChange={(e) => setFormEquipo({ ...formEquipo, rango: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Resolución:</label>
+                <input
+                  type="text"
+                  value={formEquipo.resolucion}
+                  onChange={(e) => setFormEquipo({ ...formEquipo, resolucion: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Magnitud:</label>
+                <input
+                  type="text"
+                  value={formEquipo.magnitud}
+                  onChange={(e) => setFormEquipo({ ...formEquipo, magnitud: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Norma:</label>
+                <input
+                  type="text"
+                  value={formEquipo.norma}
+                  onChange={(e) => setFormEquipo({ ...formEquipo, norma: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Protocolo:</label>
+                <input
+                  type="text"
+                  value={formEquipo.protocolo}
+                  onChange={(e) => setFormEquipo({ ...formEquipo, protocolo: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Hoja de vida:</label>
+                <input
+                  type="text"
+                  value={formEquipo.hoja_de_vida}
+                  onChange={(e) => setFormEquipo({ ...formEquipo, hoja_de_vida: e.target.value })}
                 />
               </div>
               <div className="form-group">
@@ -369,6 +423,12 @@ function Equipment() {
               <p><strong>Marca/Modelo:</strong> {selected.marca || '—'} / {selected.modelo || '—'}</p>
               <p><strong>N° serie:</strong> {selected.numero_serie || '—'}</p>
               <p><strong>Ubicación:</strong> {selected.ubicacion || '—'}</p>
+              <p><strong>Rango:</strong> {selected.rango || '—'}</p>
+              <p><strong>Resolución:</strong> {selected.resolucion || '—'}</p>
+              <p><strong>Magnitud:</strong> {selected.magnitud || '—'}</p>
+              <p><strong>Norma:</strong> {selected.norma || '—'}</p>
+              <p><strong>Protocolo:</strong> {selected.protocolo || '—'}</p>
+              <p><strong>Hoja de vida:</strong> {selected.hoja_de_vida || '—'}</p>
               <p><strong>Responsable:</strong> {selected.responsable?.nombre || '—'}</p>
               <p><strong>Ingreso:</strong> {selected.fecha_ingreso || '—'}</p>
               <p className={claseVencimiento(selected.proxima_calibracion)}>

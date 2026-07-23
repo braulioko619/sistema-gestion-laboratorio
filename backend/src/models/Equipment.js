@@ -31,6 +31,30 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    rango: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resolucion: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    magnitud: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    norma: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    protocolo: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    hoja_de_vida: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     responsable_id: {
       type: DataTypes.UUID,
       allowNull: true,
