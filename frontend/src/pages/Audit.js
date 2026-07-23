@@ -58,7 +58,7 @@ function Audit() {
   return (
     <div className="audit-container">
       <div className="audit-header">
-        <h1>🔍 Auditoría del Sistema</h1>
+        <h1>Auditoría del Sistema</h1>
         <div className="export-buttons">
           <button onClick={() => downloadReport('json')} className="btn-secondary">📥 JSON</button>
           <button onClick={() => downloadReport('csv')} className="btn-secondary">📥 CSV</button>

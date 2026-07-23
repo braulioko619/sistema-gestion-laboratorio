@@ -10,7 +10,7 @@
 }
 
 .audit-header h1 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin: 0;
 }
 
@@ -39,7 +39,7 @@
 }
 
 .filters-section h3 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-bottom: 15px;
 }
 
@@ -54,7 +54,7 @@
 }
 
 .logs-section h2 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-bottom: 20px;
 }
 
@@ -80,7 +80,7 @@
 }
 
 .log-action {
-  background-color: #3498db;
+  background-color: var(--secondary-color);
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
@@ -91,7 +91,7 @@
 
 .log-entity {
   background-color: #e8f4f8;
-  color: #2c3e50;
+  color: var(--primary-color);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -114,12 +114,12 @@
 .log-details p {
   margin: 5px 0;
   font-size: 13px;
-  color: #2c3e50;
+  color: var(--primary-color);
   word-break: break-all;
 }
 
 .log-details strong {
-  color: #2c3e50;
+  color: var(--primary-color);
   font-weight: 600;
 }
 

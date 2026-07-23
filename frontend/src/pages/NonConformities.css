@@ -76,8 +76,8 @@
 }
 
 .badge-nc-en_verificacion {
-  background: #eaf2fd;
-  color: #2471a3;
+  background: var(--secondary-light);
+  color: var(--secondary-dark);
 }
 
 .badge-nc-cerrada {
@@ -140,7 +140,7 @@
 
 .nc-origen {
   background: #f5f7fa;
-  border-left: 3px solid #2471a3;
+  border-left: 3px solid var(--secondary-dark);
   padding: 8px 12px;
   border-radius: 4px;
 }
@@ -152,7 +152,7 @@
 }
 
 .btn-secondary {
-  background: #2471a3;
+  background: var(--secondary-dark);
   color: #fff;
   border: none;
   padding: 10px 16px;
@@ -161,7 +161,7 @@
 }
 
 .btn-secondary:hover {
-  background: #1a5276;
+  background: var(--primary-color);
 }
 
 .nc-verify {

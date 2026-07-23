@@ -1,0 +1,412 @@
+.cal-container {
+  padding: 20px 0;
+}
+
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.cal-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color, #d5e4e1);
+}
+
+.cal-tab {
+  background: none;
+  color: var(--text-light, #698184);
+  border-radius: 7px 7px 0 0;
+  padding: 10px 18px;
+  font-weight: 600;
+}
+
+.cal-tab.active {
+  background: var(--light-bg, #f2f7f6);
+  color: var(--primary-color, #00857d);
+  border-bottom: 3px solid var(--primary-color, #00857d);
+}
+
+.cal-actions {
+  margin-bottom: 15px;
+}
+
+.cal-form {
+  margin-bottom: 20px;
+}
+
+.cal-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+}
+
+.cal-cliente-select {
+  max-width: 320px;
+  margin-bottom: 15px;
+}
+
+.cal-row {
+  cursor: pointer;
+}
+
+.cal-row:hover {
+  background: #f5f7fa;
+}
+
+.cal-fecha-vencida {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.cal-fecha-proxima {
+  color: #b9770e;
+  font-weight: 600;
+}
+
+.cal-alertas {
+  margin-bottom: 20px;
+  border-left: 4px solid #e67e22;
+  padding: 16px;
+}
+
+.cal-instrumentos-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.cal-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 400;
+}
+
+.cal-checkbox input {
+  width: auto;
+  margin: 0;
+}
+
+.cal-upload-btn {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--light-bg, #f2f7f6);
+  color: var(--primary-color, #00857d);
+  border: 1px solid var(--border-color, #d5e4e1);
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cal-cert-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cal-cert-actions .btn-secondary {
+  font-size: 13px;
+  padding: 6px 12px;
+  margin: 2px 4px 2px 0;
+}
+
+/* Badges de estado de cliente / instrumento */
+.badge-cal-activo {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+.badge-cal-inactivo {
+  background: #f2f3f4;
+  color: #566573;
+}
+
+.badge-cal-dado_de_baja {
+  background: #f2f3f4;
+  color: #566573;
+}
+
+.badge-cal-vencido {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.badge-cal-proximo {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+/* Badges de estado de orden de trabajo */
+.badge-ot-recibida {
+  background: #eaf2fd;
+  color: #2471a3;
+}
+
+.badge-ot-en_proceso {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+.badge-ot-calibrada {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+.badge-ot-certificado_emitido {
+  background: #f0eafc;
+  color: #6c3fa8;
+}
+
+.badge-ot-entregada {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+.badge-ot-cancelada {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+/* Badges de estado de ítem de orden */
+.badge-item-pendiente {
+  background: #eaf2fd;
+  color: #2471a3;
+}
+
+.badge-item-calibrado {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+.badge-item-rechazado {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+/* Badges de estado de certificado */
+.badge-cert-borrador {
+  background: #f2f3f4;
+  color: #566573;
+}
+
+.badge-cert-firmado {
+  background: #eaf2fd;
+  color: #2471a3;
+}
+
+.badge-cert-emitido {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+.badge-cert-enviado {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+/* Modal (detalle de orden de trabajo) */
+.cal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.cal-modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 860px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.cal-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.cal-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 4px 16px;
+  margin-bottom: 12px;
+}
+
+.cal-estado-actions {
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  margin: 12px 0;
+  padding: 12px 0;
+}
+
+.cal-estado-actions select {
+  width: auto;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+/* Filtros (ej: pestaña Documentos comerciales / Cotizaciones) */
+.cal-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 15px;
+}
+
+.cal-filtros .form-group {
+  min-width: 180px;
+  margin-bottom: 0;
+}
+
+/* Formulario en línea (direcciones/contactos dentro del detalle de cliente) */
+.cal-inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 16px;
+  padding: 12px;
+  background: var(--light-bg, #f2f7f6);
+  border-radius: 7px;
+}
+
+.cal-inline-form input,
+.cal-inline-form select {
+  width: auto;
+  flex: 1 1 140px;
+  padding: 8px;
+}
+
+.cal-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.cal-info-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cal-link-btn {
+  background: none;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 13px;
+  margin-left: auto;
+  padding: 0;
+}
+
+.cal-link-btn:hover {
+  text-decoration: underline;
+}
+
+.badge-doc-tipo {
+  background: #eaf2fd;
+  color: #2471a3;
+}
+
+.badge-doc-orden_compra { background: #eaf2fd; color: #2471a3; }
+.badge-doc-factura { background: #f0eafc; color: #6c3fa8; }
+.badge-doc-nota_credito { background: #fef5e7; color: #b9770e; }
+.badge-doc-estado-vigente { background: #eafaf1; color: #1e8449; }
+.badge-doc-estado-anulado { background: #f2f3f4; color: #566573; }
+
+.cal-doc-actions {
+  white-space: nowrap;
+}
+
+.cal-enviar-cert {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cal-enviar-cert select {
+  padding: 6px;
+  font-size: 13px;
+}
+
+/* Sub-pestañas (Cotizaciones / Tarifario) */
+.cal-subtabs {
+  margin-bottom: 15px;
+}
+
+.cot-item-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 12px;
+  align-items: end;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--light-bg, #f2f7f6);
+  border-radius: 7px;
+}
+
+.cot-item-row .form-group {
+  margin-bottom: 0;
+}
+
+.cot-item-subtotal {
+  font-weight: 700;
+  color: var(--primary-color, #00857d);
+  align-self: center;
+}
+
+.cot-totales-preview {
+  max-width: 320px;
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: var(--light-bg, #f2f7f6);
+  border-radius: 7px;
+}
+
+.cot-totales-preview p {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.cot-total-final {
+  font-size: 1.1em;
+  border-top: 1px solid var(--border-color, #d5e4e1);
+  padding-top: 6px;
+  margin-top: 6px !important;
+  color: var(--primary-color, #00857d);
+}
+
+.badge-cot-borrador { background: #f2f3f4; color: #566573; }
+.badge-cot-emitida { background: #eaf2fd; color: #2471a3; }
+.badge-cot-aceptada { background: #eafaf1; color: #1e8449; }
+.badge-cot-rechazada { background: #fdecea; color: #c0392b; }
+.badge-cot-anulada { background: #f2f3f4; color: #566573; }
