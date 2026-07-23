@@ -10,7 +10,7 @@
 }
 
 .quality-header h1 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin: 0;
 }
 
@@ -19,7 +19,7 @@
 }
 
 .quality-form h2 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-bottom: 20px;
 }
 
@@ -28,7 +28,7 @@
 }
 
 .indicators-grid h2 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-bottom: 20px;
 }
 
@@ -44,11 +44,11 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-left: 4px solid #3498db;
+  border-left: 4px solid var(--secondary-color);
 }
 
 .indicator-card h3 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-top: 0;
   margin-bottom: 10px;
 }
@@ -67,7 +67,7 @@
 }
 
 .records-section h2 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-top: 0;
   margin-bottom: 20px;
 }
@@ -90,7 +90,7 @@ table th {
   padding: 12px;
   text-align: left;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--primary-color);
 }
 
 table td {
@@ -137,4 +137,29 @@ table tbody tr:hover {
   table th, table td {
     padding: 8px;
   }
+}
+
+.quality-form small {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+}
+
+.attachment-link {
+  display: block;
+  max-width: 220px;
+  overflow: hidden;
+  padding: 0;
+  color: #2563eb;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.attachment-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
 }

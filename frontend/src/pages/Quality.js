@@ -13,6 +13,7 @@ function Quality() {
     valor: '',
     notas: '',
   });
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -43,14 +44,34 @@ function Quality() {
   const handleCreateRecord = async (e) => {
     e.preventDefault();
     try {
-      await qualityAPI.createRecord(formData);
+      const payload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
+      files.forEach(file => payload.append('archivos', file));
+      await qualityAPI.createRecord(payload);
       setFormData({ tipo_indicador: '', valor: '', notas: '' });
+      setFiles([]);
       setShowForm(false);
       fetchData();
       alert('Registro de calidad creado exitosamente');
     } catch (err) {
       setError('Error al crear registro');
       console.error(err);
+    }
+  };
+
+  const handleDownloadAttachment = async (recordId, attachment) => {
+    try {
+      const response = await qualityAPI.downloadAttachment(recordId, attachment.id);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = attachment.nombre_original;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(`No se pudo descargar ${attachment.nombre_original}`);
     }
   };
 
@@ -61,7 +82,7 @@ function Quality() {
   return (
     <div className="quality-container">
       <div className="quality-header">
-        <h1>✅ Control de Calidad</h1>
+        <h1>Control de Calidad</h1>
         <button 
           onClick={() => setShowForm(!showForm)}
           className="btn-primary"
@@ -115,6 +136,18 @@ function Quality() {
               ></textarea>
             </div>
 
+            <div className="form-group">
+              <label>Archivos de respaldo (opcional):</label>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.csv,.txt,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                onChange={(e) => setFiles(Array.from(e.target.files || []))}
+              />
+              <small>Hasta 5 archivos de 10 MB cada uno: PDF, imagen, CSV, TXT, Word o Excel.</small>
+              {files.length > 0 && <small>{files.length} archivo(s) seleccionado(s).</small>}
+            </div>
+
             <button type="submit" className="btn-primary">Registrar</button>
           </form>
         </div>
@@ -147,6 +180,7 @@ function Quality() {
                   <th>Estado</th>
                   <th>Registrado por</th>
                   <th>Fecha</th>
+                  <th>Archivos</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,6 +195,18 @@ function Quality() {
                     </td>
                     <td>{record.registrador?.nombre || record.registrado_por}</td>
                     <td>{new Date(record.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      {record.adjuntos?.length ? record.adjuntos.map(attachment => (
+                        <button
+                          key={attachment.id}
+                          type="button"
+                          className="attachment-link"
+                          onClick={() => handleDownloadAttachment(record.id, attachment)}
+                        >
+                          {attachment.nombre_original}
+                        </button>
+                      )) : 'Sin adjuntos'}
+                    </td>
                   </tr>
                 ))}
               </tbody>

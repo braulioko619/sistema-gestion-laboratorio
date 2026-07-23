@@ -1,4 +1,7 @@
-const { QualityRecord, QualityIndicator, NonConformity, User, AuditLog } = require('../models');
+const path = require('path');
+const fs = require('fs');
+const { QualityRecord, QualityIndicator, QualityRecordAttachment, NonConformity, User, AuditLog } = require('../models');
+const { uploadDirectory } = require('../middleware/uploadQualityAttachments');
 const logger = require('../config/logger');
 
 // Crear registro de calidad
@@ -52,6 +55,20 @@ exports.createQualityRecord = async (req, res) => {
       notas,
       registrado_por: req.user.id,
     });
+
+    // Adjuntos opcionales (multipart/form-data, campo "archivos")
+    if (req.files && req.files.length > 0) {
+      await QualityRecordAttachment.bulkCreate(
+        req.files.map((file) => ({
+          record_id: record.id,
+          nombre_original: file.originalname,
+          nombre_almacenado: file.filename,
+          tipo_mime: file.mimetype,
+          tamano_bytes: file.size,
+          subido_por: req.user.id,
+        }))
+      );
+    }
 
     // Registrar auditoría
     await AuditLog.create({
@@ -139,7 +156,10 @@ exports.getQualityRecords = async (req, res) => {
 
     const { rows, count } = await QualityRecord.findAndCountAll({
       where,
-      include: [{ model: User, as: 'registrador', attributes: ['id', 'nombre', 'email'] }],
+      include: [
+        { model: User, as: 'registrador', attributes: ['id', 'nombre', 'email'] },
+        { model: QualityRecordAttachment, as: 'adjuntos' },
+      ],
       offset,
       limit: parseInt(limit),
       order: [['createdAt', 'DESC']],
@@ -235,6 +255,45 @@ exports.getQualitySummary = async (req, res) => {
         code: 'GET_SUMMARY_ERROR',
         message: 'Error obteniendo resumen de calidad',
       },
+    });
+  }
+};
+
+// Descargar un adjunto de un registro de calidad. La descarga exige autenticación.
+exports.downloadQualityRecordAttachment = async (req, res) => {
+  try {
+    const { attachmentId } = req.params;
+    const attachment = await QualityRecordAttachment.findByPk(attachmentId);
+
+    if (!attachment) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'ATTACHMENT_NOT_FOUND', message: 'El adjunto no existe' },
+      });
+    }
+
+    const filePath = path.join(uploadDirectory, attachment.nombre_almacenado);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'FILE_NOT_FOUND', message: 'El archivo no está disponible en el servidor' },
+      });
+    }
+
+    await AuditLog.create({
+      usuario_id: req.user.id,
+      accion: 'descargar',
+      entidad: 'quality_record_attachment',
+      entidad_id: attachment.id,
+      ip_address: req.ip,
+    });
+
+    return res.download(filePath, attachment.nombre_original);
+  } catch (error) {
+    logger.error(`[QUALITY] Error descargando adjunto: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'DOWNLOAD_ATTACHMENT_ERROR', message: 'Error descargando el adjunto' },
     });
   }
 };

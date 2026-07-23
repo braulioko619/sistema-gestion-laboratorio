@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { documentsAPI } from '../services/api';
+import { documentsAPI, usersAPI } from '../services/api';
 import './Documents.css';
 
 function Documents() {
@@ -13,11 +13,18 @@ function Documents() {
     tipo: 'procedimiento',
     contenido: '',
   });
+  const [files, setFiles] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 10 });
+  const [users, setUsers] = useState([]);
+  const [openAuth, setOpenAuth] = useState(null);
+  const [authorizations, setAuthorizations] = useState({});
+  const [authForm, setAuthForm] = useState({ usuario_id: '', fecha_autorizacion: '' });
 
   useEffect(() => {
     fetchDocuments();
-  }, [pagination]);
+    usersAPI.list().then((res) => setUsers(res.data.data)).catch(() => setUsers([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, pagination.limit]);
 
   const fetchDocuments = async () => {
     try {
@@ -41,14 +48,75 @@ function Documents() {
   const handleCreateDocument = async (e) => {
     e.preventDefault();
     try {
-      await documentsAPI.create(formData);
+      const payload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
+      files.forEach(file => payload.append('archivos', file));
+      await documentsAPI.create(payload);
       setFormData({ titulo: '', descripcion: '', tipo: 'procedimiento', contenido: '' });
+      setFiles([]);
       setShowForm(false);
       fetchDocuments();
       alert('Documento creado exitosamente');
     } catch (err) {
       setError('Error al crear documento');
       console.error(err);
+    }
+  };
+
+  const handleDownloadAttachment = async (documentId, attachment) => {
+    try {
+      const response = await documentsAPI.downloadAttachment(documentId, attachment.id);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = attachment.nombre_original;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(`No se pudo descargar ${attachment.nombre_original}`);
+    }
+  };
+
+  const toggleAuthorizations = async (docId) => {
+    if (openAuth === docId) {
+      setOpenAuth(null);
+      return;
+    }
+    setOpenAuth(docId);
+    if (!authorizations[docId]) {
+      try {
+        const res = await documentsAPI.authorizations(docId);
+        setAuthorizations((prev) => ({ ...prev, [docId]: res.data.data }));
+      } catch (err) {
+        setError('Error al cargar autorizaciones');
+      }
+    }
+  };
+
+  const handleGrantAuthorization = async (docId, e) => {
+    e.preventDefault();
+    try {
+      await documentsAPI.grantAuthorization(docId, {
+        usuario_id: authForm.usuario_id,
+        fecha_autorizacion: authForm.fecha_autorizacion || undefined,
+      });
+      const res = await documentsAPI.authorizations(docId);
+      setAuthorizations((prev) => ({ ...prev, [docId]: res.data.data }));
+      setAuthForm({ usuario_id: '', fecha_autorizacion: '' });
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Error al otorgar la autorización');
+    }
+  };
+
+  const handleRevokeAuthorization = async (docId, authorizationId) => {
+    try {
+      await documentsAPI.revokeAuthorization(docId, authorizationId);
+      const res = await documentsAPI.authorizations(docId);
+      setAuthorizations((prev) => ({ ...prev, [docId]: res.data.data }));
+    } catch (err) {
+      setError('Error al revocar la autorización');
     }
   };
 
@@ -59,7 +127,7 @@ function Documents() {
   return (
     <div className="documents-container">
       <div className="documents-header">
-        <h1>📄 Documentos</h1>
+        <h1>Documentos</h1>
         <button 
           onClick={() => setShowForm(!showForm)}
           className="btn-primary"
@@ -116,6 +184,17 @@ function Documents() {
               ></textarea>
             </div>
 
+            <div className="form-group">
+              <label>Archivos adjuntos (opcional):</label>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.csv,.txt,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                onChange={(e) => setFiles(Array.from(e.target.files || []))}
+              />
+              {files.length > 0 && <small>{files.length} archivo(s) seleccionado(s).</small>}
+            </div>
+
             <button type="submit" className="btn-primary">Crear Documento</button>
           </form>
         </div>
@@ -137,6 +216,69 @@ function Documents() {
               <div className="doc-meta">
                 <small>Tipo: {doc.tipo} | Versión: {doc.version_actual}</small>
               </div>
+              {doc.adjuntos?.length > 0 && (
+                <div className="doc-attachments">
+                  {doc.adjuntos.map(attachment => (
+                    <button
+                      key={attachment.id}
+                      type="button"
+                      className="attachment-link"
+                      onClick={() => handleDownloadAttachment(doc.id, attachment)}
+                    >
+                      📎 {attachment.nombre_original}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button type="button" className="btn-secondary" onClick={() => toggleAuthorizations(doc.id)}>
+                {openAuth === doc.id ? '✕ Cerrar autorizaciones' : '🔑 Autorizaciones'}
+              </button>
+              {openAuth === doc.id && (
+                <div className="authorization-matrix">
+                  <form onSubmit={(e) => handleGrantAuthorization(doc.id, e)} className="authorization-form">
+                    <select
+                      value={authForm.usuario_id}
+                      onChange={(e) => setAuthForm({ ...authForm, usuario_id: e.target.value })}
+                      required
+                    >
+                      <option value="">— Persona a autorizar —</option>
+                      {users.map(u => (
+                        <option key={u.id} value={u.id}>{u.nombre} ({u.email})</option>
+                      ))}
+                    </select>
+                    <input
+                      type="date"
+                      value={authForm.fecha_autorizacion}
+                      onChange={(e) => setAuthForm({ ...authForm, fecha_autorizacion: e.target.value })}
+                    />
+                    <button type="submit" className="btn-primary">Otorgar</button>
+                  </form>
+                  <table className="matrix-table">
+                    <thead>
+                      <tr>
+                        <th>Persona</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(authorizations[doc.id] || []).map(auth => (
+                        <tr key={auth.id}>
+                          <td>{auth.usuario?.nombre} ({auth.usuario?.email})</td>
+                          <td><span className={`badge badge-${auth.estado}`}>{auth.estado}</span></td>
+                          <td>{auth.fecha_autorizacion}</td>
+                          <td>
+                            {auth.estado === 'autorizado' && (
+                              <button type="button" className="btn-danger" onClick={() => handleRevokeAuthorization(doc.id, auth.id)}>Revocar</button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           ))
         )}

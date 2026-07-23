@@ -53,6 +53,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'registrado_por',
       as: 'registrador',
     });
+    QualityRecord.hasMany(models.QualityRecordAttachment, {
+      foreignKey: 'record_id',
+      as: 'adjuntos',
+      onDelete: 'CASCADE',
+    });
   };
 
   return QualityRecord;

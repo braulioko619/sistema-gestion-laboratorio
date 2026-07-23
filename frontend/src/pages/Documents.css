@@ -10,7 +10,7 @@
 }
 
 .documents-header h1 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin: 0;
 }
 
@@ -19,7 +19,7 @@
 }
 
 .document-form h2 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-bottom: 20px;
 }
 
@@ -59,7 +59,7 @@
 
 .doc-header h3 {
   margin: 0;
-  color: #2c3e50;
+  color: var(--primary-color);
   font-size: 18px;
 }
 
@@ -114,7 +114,7 @@
 
 .pagination button {
   padding: 8px 16px;
-  background-color: #3498db;
+  background-color: var(--secondary-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -139,4 +139,40 @@
   .documents-list {
     grid-template-columns: 1fr;
   }
+
+  .authorization-form { grid-template-columns: 1fr; }
 }
+
+.attachment-link {
+  display: block;
+  max-width: 220px;
+  overflow: hidden;
+  padding: 0;
+  color: #2563eb;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.attachment-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.doc-attachments {
+  margin: 8px 0;
+}
+
+.btn-secondary, .btn-danger { margin-top: 14px; padding: 8px 12px; border: 0; border-radius: 4px; cursor: pointer; }
+.btn-secondary { background: #e2e8f0; color: #1e293b; }
+.btn-danger { background: #dc2626; color: white; margin-top: 0; }
+.authorization-matrix { margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 6px; }
+.authorization-form { display: grid; grid-template-columns: 1.3fr 1fr auto; gap: 10px; margin: 12px 0; }
+.authorization-form input, .authorization-form select { min-width: 0; padding: 9px; border: 1px solid #cbd5e1; border-radius: 4px; }
+.matrix-table { width: 100%; border-collapse: collapse; }
+.matrix-table th, .matrix-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+.badge-autorizado { background: #16a34a; color: white; }
+.badge-revocado { background: #64748b; color: white; }

@@ -62,6 +62,16 @@ module.exports = (sequelize, DataTypes) => {
       as: 'versiones',
       onDelete: 'CASCADE',
     });
+    Document.hasMany(models.ProcedureAuthorization, {
+      foreignKey: 'document_id',
+      as: 'autorizaciones',
+      onDelete: 'CASCADE',
+    });
+    Document.hasMany(models.DocumentAttachment, {
+      foreignKey: 'document_id',
+      as: 'adjuntos',
+      onDelete: 'CASCADE',
+    });
   };
 
   return Document;
