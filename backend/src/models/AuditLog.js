@@ -22,7 +22,9 @@ module.exports = (sequelize, DataTypes) => {
         'aprobar',
         'rechazar',
         'publicar',
-        'archivar'
+        'archivar',
+        'enviar',
+        'iniciar_sesion'
       ),
       allowNull: false,
     },
@@ -51,6 +53,15 @@ module.exports = (sequelize, DataTypes) => {
     detalles: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+    timestamp: {
+      // Con timestamps:false, createdAt:'timestamp' no basta para que Sequelize
+      // registre el atributo por sí solo: sin esto la columna (que sí existe en
+      // la BD, con default now()) queda fuera de todo SELECT y llega undefined
+      // al frontend ("Invalid Date" en Auditoría y en cualquier historial).
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   }, {
     tableName: 'audit_logs',
