@@ -1,0 +1,5 @@
+<svg width="220" height="220" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lenor">
+  <line x1="188" y1="16" x2="66" y2="150" stroke="#00857D" stroke-width="46" stroke-linecap="round"/>
+  <line x1="80" y1="150" x2="138" y2="150" stroke="#00857D" stroke-width="46" stroke-linecap="round"/>
+  <polygon points="138,116 196,150 138,184" fill="#00857D"/>
+</svg>

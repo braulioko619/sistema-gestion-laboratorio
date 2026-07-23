@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   padding: 20px;
 }
 
@@ -16,18 +16,40 @@
   width: 100%;
 }
 
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.login-logo {
+  height: 48px;
+  width: auto;
+}
+
+.login-brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--primary-color);
+}
+
 .login-card h1 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-bottom: 10px;
   text-align: center;
-  font-size: 28px;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .subtitle {
   text-align: center;
-  color: #7f8c8d;
+  color: var(--text-light);
   margin-bottom: 30px;
-  font-size: 14px;
+  font-size: 13px;
+  letter-spacing: 0.3px;
 }
 
 .form-group {
@@ -37,14 +59,14 @@
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #2c3e50;
+  color: var(--primary-color);
   font-weight: 500;
 }
 
 .form-group input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #bdc3c7;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 14px;
   transition: border-color 0.3s;
@@ -52,14 +74,14 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 5px rgba(0, 133, 125, 0.25);
 }
 
 .btn-login {
   width: 100%;
   padding: 12px;
-  background-color: #3498db;
+  background-color: var(--secondary-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -71,7 +93,7 @@
 }
 
 .btn-login:hover:not(:disabled) {
-  background-color: #2980b9;
+  background-color: var(--secondary-dark);
 }
 
 .btn-login:disabled {
@@ -89,7 +111,7 @@
 }
 
 .test-credentials h4 {
-  color: #2c3e50;
+  color: var(--primary-color);
   margin-bottom: 15px;
   font-size: 14px;
 }
@@ -102,5 +124,26 @@
 }
 
 .test-credentials strong {
-  color: #2c3e50;
+  color: var(--primary-color);
+}
+
+.sso-divider {
+  text-align: center;
+  color: #95a5a6;
+  margin: 16px 0;
+  font-size: 13px;
+}
+
+.btn-microsoft {
+  display: block;
+  text-align: center;
+  background: #2f2f2f;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.btn-microsoft:hover {
+  background: #1f1f1f;
 }

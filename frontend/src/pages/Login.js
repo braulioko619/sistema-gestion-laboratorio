@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { MICROSOFT_LOGIN_URL } from '../services/api';
+import lenorMark from '../assets/lenor-mark.svg';
 import './Login.css';
 
 function Login() {
@@ -29,9 +31,13 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>📊 Sistema de Gestión de Laboratorio</h1>
-        <p className="subtitle">ISO/IEC 17025 - ISO 10720</p>
-        
+        <div className="login-brand">
+          <img src={lenorMark} alt="Lenor" className="login-logo" />
+          <span className="login-brand-name">LENOR</span>
+        </div>
+        <h1>Sistema de Gestión de Laboratorio</h1>
+        <p className="subtitle">ISO/IEC 17025 · ISO 10720</p>
+
         {error && <div className="alert alert-danger">{error}</div>}
 
         <form onSubmit={handleSubmit}>
@@ -63,6 +69,12 @@ function Login() {
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
+
+        <div className="sso-divider">o</div>
+
+        <a href={MICROSOFT_LOGIN_URL} className="btn-login btn-microsoft">
+          Iniciar sesión con Microsoft
+        </a>
 
         <div className="test-credentials">
           <h4>Credenciales de Prueba:</h4>
