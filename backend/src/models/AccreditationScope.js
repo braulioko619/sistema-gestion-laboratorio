@@ -7,20 +7,20 @@ module.exports = (sequelize, DataTypes) => {
     },
     codigo_acreditacion: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
       comment: 'Ej: OI 452 (número de acreditación INN)',
     },
     tipo_organismo: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     norma_acreditacion: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     area: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     subarea: {
       type: DataTypes.STRING,
@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     item: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: false,
     },
     esquema: {
       type: DataTypes.STRING,

@@ -23,6 +23,7 @@ const FORM_REGISTRO_VACIO = {
 
 const FORM_AUTH_VACIO = {
   actividad: '',
+  magnitud: '',
   alcance: '',
   fecha_autorizacion: '',
   fecha_vencimiento: '',
@@ -42,6 +43,9 @@ function Personnel() {
   const [formAuth, setFormAuth] = useState(FORM_AUTH_VACIO);
 
   const puedeEditar = ['administrador', 'jefe_laboratorio'].includes(user?.rol);
+  // La matriz de competencias (otorgar/revocar autorizaciones) también la
+  // mantiene calidad, a diferencia del expediente (formación/capacitación).
+  const puedeGestionarAutorizaciones = ['administrador', 'jefe_laboratorio', 'personal_calidad'].includes(user?.rol);
 
   const fetchData = async () => {
     try {
@@ -371,7 +375,7 @@ function Personnel() {
 
             <div className="pers-section-header">
               <h3>Autorizaciones (6.2.6)</h3>
-              {puedeEditar && (
+              {puedeGestionarAutorizaciones && (
                 <button className="btn-primary" onClick={() => setShowAuthForm(!showAuthForm)}>
                   {showAuthForm ? '✕ Cancelar' : '➕ Otorgar autorización'}
                 </button>
@@ -389,6 +393,15 @@ function Personnel() {
                       onChange={(e) => setFormAuth({ ...formAuth, actividad: e.target.value })}
                       placeholder="Ej: Ensayo de pH según POE-05"
                       required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Magnitud:</label>
+                    <input
+                      type="text"
+                      value={formAuth.magnitud}
+                      onChange={(e) => setFormAuth({ ...formAuth, magnitud: e.target.value })}
+                      placeholder="Ej: Masa, Presión, Temperatura"
                     />
                   </div>
                   <div className="form-group">
@@ -433,24 +446,26 @@ function Personnel() {
                   <thead>
                     <tr>
                       <th>Actividad</th>
+                      <th>Magnitud</th>
                       <th>Autorizó</th>
                       <th>Fecha</th>
                       <th>Vence</th>
                       <th>Estado</th>
-                      {puedeEditar && <th></th>}
+                      {puedeGestionarAutorizaciones && <th></th>}
                     </tr>
                   </thead>
                   <tbody>
                     {selected.autorizaciones.map((a) => (
                       <tr key={a.id}>
                         <td className="pers-detalle">{a.actividad}</td>
+                        <td>{a.magnitud || '—'}</td>
                         <td>{a.autorizador?.nombre || '—'}</td>
                         <td>{a.fecha_autorizacion}</td>
                         <td>{a.fecha_vencimiento || '—'}</td>
                         <td>
                           <span className={`badge badge-auth-${a.estado}`}>{a.estado}</span>
                         </td>
-                        {puedeEditar && (
+                        {puedeGestionarAutorizaciones && (
                           <td>
                             {a.estado === 'vigente' && (
                               <button

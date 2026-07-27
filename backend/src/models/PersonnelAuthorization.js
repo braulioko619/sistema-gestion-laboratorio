@@ -14,6 +14,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       comment: 'Actividad o método autorizado (ISO 17025 6.2.6)',
     },
+    magnitud: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Magnitud metrológica autorizada (ej: Masa, Presión)',
+    },
     alcance: {
       type: DataTypes.TEXT,
       allowNull: true,

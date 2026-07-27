@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    magnitud: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     estado: {
       type: DataTypes.ENUM('autorizado', 'revocado'),
       allowNull: false,

@@ -400,7 +400,7 @@ exports.getProcedureAuthorizations = async (req, res) => {
 exports.grantProcedureAuthorization = async (req, res) => {
   try {
     const { id } = req.params;
-    const { usuario_id, fecha_autorizacion, fecha_vencimiento, alcance, observaciones } = req.body;
+    const { usuario_id, fecha_autorizacion, fecha_vencimiento, alcance, magnitud, observaciones } = req.body;
 
     if (!usuario_id) {
       return res.status(400).json({
@@ -426,6 +426,7 @@ exports.grantProcedureAuthorization = async (req, res) => {
         fecha_autorizacion: fecha_autorizacion || new Date(),
         fecha_vencimiento,
         alcance,
+        magnitud: magnitud || null,
         autorizado_por: req.user.id,
         observaciones,
       },

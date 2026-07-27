@@ -6,6 +6,7 @@ const {
   AuditLog,
 } = require('../models');
 const { Op } = require('sequelize');
+const PersonnelAuthorizationService = require('../services/PersonnelAuthorizationService');
 const logger = require('../config/logger');
 
 const DIAS_ALERTA = 60;
@@ -196,7 +197,7 @@ exports.createPersonnelRecord = async (req, res) => {
 // Otorgar autorización (6.2.6)
 exports.createAuthorization = async (req, res) => {
   try {
-    const { actividad, alcance, fecha_autorizacion, fecha_vencimiento, observaciones } =
+    const { actividad, magnitud, alcance, fecha_autorizacion, fecha_vencimiento, observaciones } =
       req.body;
 
     if (!actividad || !fecha_autorizacion) {
@@ -223,6 +224,7 @@ exports.createAuthorization = async (req, res) => {
     const autorizacion = await PersonnelAuthorization.create({
       user_id: usuario.id,
       actividad,
+      magnitud: magnitud || null,
       alcance,
       autorizado_por: req.user.id,
       fecha_autorizacion,
@@ -407,6 +409,38 @@ exports.getPersonnelAlerts = async (req, res) => {
         code: 'GET_ALERTS_ERROR',
         message: 'Error obteniendo alertas de personal',
       },
+    });
+  }
+};
+
+// "¿Está X autorizado para la magnitud M hoy?" (tarea 2.5)
+exports.checkAuthorization = async (req, res) => {
+  try {
+    const { magnitud, fecha } = req.query;
+
+    if (!magnitud) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'La magnitud es obligatoria' },
+      });
+    }
+
+    const usuario = await User.findByPk(req.params.userId);
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'USER_NOT_FOUND', message: 'El usuario no existe' },
+      });
+    }
+
+    const resultado = await PersonnelAuthorizationService.estaAutorizado(usuario.id, magnitud, fecha);
+
+    res.json({ success: true, data: resultado });
+  } catch (error) {
+    logger.error(`[PERSONNEL] Error consultando autorización: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: { code: 'CHECK_AUTH_ERROR', message: 'Error consultando la autorización' },
     });
   }
 };
