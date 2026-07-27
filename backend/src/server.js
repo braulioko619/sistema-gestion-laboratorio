@@ -6,6 +6,7 @@ validateEnv();
 const app = require('./app');
 const db = require('./models');
 const logger = require('./config/logger');
+const { startStabilityAlertsJob } = require('./jobs/stabilityAlertsJob');
 
 const PORT = process.env.PORT || 3001;
 
@@ -31,6 +32,8 @@ async function start() {
       console.log(`✓ Backend corriendo en http://localhost:${PORT}`);
       console.log(`✓ Health check: http://localhost:${PORT}/api/health`);
     });
+
+    startStabilityAlertsJob();
 
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {

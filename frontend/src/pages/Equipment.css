@@ -132,6 +132,12 @@
   margin-bottom: 12px;
 }
 
+.eq-deriva-punto {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
 .eq-eventos-header {
   display: flex;
   justify-content: space-between;

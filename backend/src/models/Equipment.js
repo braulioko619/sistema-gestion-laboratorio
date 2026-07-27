@@ -91,6 +91,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    error_maximo_permitido: {
+      type: DataTypes.DECIMAL(14, 6),
+      allowNull: true,
+      comment: 'Tolerancia del patrón (EMP), en la misma unidad que sus puntos calibrados; usada por el análisis de deriva (tarea 3.4)',
+    },
     registrado_por: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -112,6 +117,16 @@ module.exports = (sequelize, DataTypes) => {
     Equipment.hasMany(models.EquipmentEvent, {
       foreignKey: 'equipment_id',
       as: 'eventos',
+    });
+    Equipment.belongsToMany(models.WorkOrderItem, {
+      through: models.WorkOrderItemPatron,
+      foreignKey: 'equipment_id',
+      otherKey: 'work_order_item_id',
+      as: 'calibracionesRealizadas',
+    });
+    Equipment.hasMany(models.StandardCalibrationHistory, {
+      foreignKey: 'equipment_id',
+      as: 'historialCalibraciones',
     });
   };
 

@@ -7,6 +7,7 @@ const {
 } = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../config/logger');
+const StabilityAlertService = require('../services/StabilityAlertService');
 
 // Días de anticipación para alertas de vencimiento (decisión de diseño: 60)
 const DIAS_ALERTA = 60;
@@ -41,6 +42,7 @@ exports.createEquipment = async (req, res) => {
       responsable_id,
       fecha_ingreso,
       observaciones,
+      error_maximo_permitido,
     } = req.body;
 
     if (!codigo || !nombre) {
@@ -80,6 +82,7 @@ exports.createEquipment = async (req, res) => {
       responsable_id: responsable_id || null,
       fecha_ingreso,
       observaciones,
+      error_maximo_permitido: error_maximo_permitido ?? null,
       registrado_por: req.user.id,
     });
 
@@ -228,6 +231,7 @@ exports.updateEquipment = async (req, res) => {
       'estado',
       'fecha_ingreso',
       'observaciones',
+      'error_maximo_permitido',
     ];
 
     const cambiosAnteriores = {};
@@ -474,6 +478,40 @@ exports.getEquipmentAlerts = async (req, res) => {
         code: 'GET_ALERTS_ERROR',
         message: 'Error obteniendo alertas de equipos',
       },
+    });
+  }
+};
+
+// Alertas de estabilidad (tarea 3.5): vencimientos 30/60/90, deriva
+// proyectada fuera del error máximo permitido y U creciente. A diferencia
+// de getEquipmentAlerts (arriba, cálculo en vivo solo de vencimientos), esto
+// lee la tabla persistida que llena el job diario — es lo que alimenta el
+// dashboard y lo que evita reconsultar el análisis de deriva en cada carga.
+exports.getStabilityAlerts = async (req, res) => {
+  try {
+    const alertas = await StabilityAlertService.listarAlertasActivas();
+    res.json({ success: true, data: alertas });
+  } catch (error) {
+    logger.error(`[EQUIPMENT] Error obteniendo alertas de estabilidad: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: { code: 'GET_STABILITY_ALERTS_ERROR', message: 'Error obteniendo alertas de estabilidad' },
+    });
+  }
+};
+
+// Disparo manual del job diario (gestión de equipos): para verificación y
+// para no depender solo del cron en un escenario de prueba, tal como pide
+// el criterio de aceptación de 3.5 ("alerta generada en escenario de prueba").
+exports.runStabilityAlertsJob = async (req, res) => {
+  try {
+    const resumen = await StabilityAlertService.generarAlertasDiarias();
+    res.json({ success: true, data: resumen });
+  } catch (error) {
+    logger.error(`[EQUIPMENT] Error ejecutando job de alertas de estabilidad: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: { code: 'RUN_STABILITY_ALERTS_ERROR', message: 'Error ejecutando el job de alertas de estabilidad' },
     });
   }
 };

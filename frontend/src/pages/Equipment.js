@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceDot, ReferenceLine,
+} from 'recharts';
 import { equipmentAPI, usersAPI } from '../services/api';
 import './Equipment.css';
 
@@ -14,6 +17,16 @@ const TIPOS_EVENTO = {
   calibracion: 'Calibración',
   mantenimiento: 'Mantenimiento',
   verificacion_intermedia: 'Verificación intermedia',
+};
+
+// Tarea 3.5: etiquetas de los tipos que genera el job diario de alertas de
+// estabilidad (StabilityAlertService).
+const TIPOS_ALERTA_ESTABILIDAD = {
+  vencimiento_calibracion: 'Calibración por vencer/vencida',
+  vencimiento_mantenimiento: 'Mantenimiento por vencer/vencido',
+  vencimiento_verificacion: 'Verificación por vencer/vencida',
+  deriva: 'Deriva proyectada fuera de tolerancia',
+  incertidumbre_creciente: 'Incertidumbre creciente',
 };
 
 const FORM_EQUIPO_VACIO = {
@@ -32,6 +45,7 @@ const FORM_EQUIPO_VACIO = {
   responsable_id: '',
   fecha_ingreso: '',
   observaciones: '',
+  error_maximo_permitido: '',
 };
 
 const FORM_EVENTO_VACIO = {
@@ -45,9 +59,42 @@ const FORM_EVENTO_VACIO = {
   observaciones: '',
 };
 
+const MS_POR_DIA = 24 * 60 * 60 * 1000;
+
+// Arma el dataset del gráfico (tarea 3.4) a partir de la respuesta del
+// análisis de deriva: los valores certificados reales (serie "valor") y,
+// si hay suficientes datos, la recta de tendencia calculada por el backend
+// (serie "tendencia", evaluada en cada fecha real y en la fecha proyectada)
+// más el punto proyectado como marcador aparte.
+function construirDatosGrafico(analisisPunto) {
+  const puntos = analisisPunto.historial.map((h) => ({
+    fecha: h.fecha_calibracion,
+    valor: h.valor_certificado,
+  }));
+
+  if (!analisisPunto.suficientes_datos || !analisisPunto.proyeccion) {
+    return { datos: puntos, proyeccion: null };
+  }
+
+  const fechaBaseMs = new Date(analisisPunto.historial[0].fecha_calibracion).getTime();
+  const conTendencia = puntos.map((p) => ({
+    ...p,
+    tendencia: analisisPunto.intercepto + analisisPunto.pendiente * ((new Date(p.fecha).getTime() - fechaBaseMs) / MS_POR_DIA),
+  }));
+
+  const xProyeccion = (new Date(analisisPunto.proyeccion.fecha).getTime() - fechaBaseMs) / MS_POR_DIA;
+  conTendencia.push({
+    fecha: analisisPunto.proyeccion.fecha,
+    tendencia: analisisPunto.intercepto + analisisPunto.pendiente * xProyeccion,
+  });
+
+  return { datos: conTendencia, proyeccion: analisisPunto.proyeccion };
+}
+
 function Equipment() {
   const [equipos, setEquipos] = useState([]);
   const [alertas, setAlertas] = useState(null);
+  const [alertasEstabilidad, setAlertasEstabilidad] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,17 +105,23 @@ function Equipment() {
 
   const [formEquipo, setFormEquipo] = useState(FORM_EQUIPO_VACIO);
   const [formEvento, setFormEvento] = useState(FORM_EVENTO_VACIO);
+  const [deriva, setDeriva] = useState(null);
+  const [derivaError, setDerivaError] = useState(null);
+  const [cartaControl, setCartaControl] = useState(null);
+  const [cartaControlError, setCartaControlError] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const params = filtroEstado ? { estado: filtroEstado } : {};
-      const [eqRes, alertRes] = await Promise.all([
+      const [eqRes, alertRes, estabilidadRes] = await Promise.all([
         equipmentAPI.list(params),
         equipmentAPI.alerts(),
+        equipmentAPI.stabilityAlerts(),
       ]);
       setEquipos(eqRes.data.data);
       setAlertas(alertRes.data.data);
+      setAlertasEstabilidad(estabilidadRes.data.data);
     } catch (err) {
       setError('Error al cargar equipos');
       console.error(err);
@@ -113,11 +166,36 @@ function Equipment() {
       setSelected(res.data.data);
       setShowEventForm(false);
       setFormEvento(FORM_EVENTO_VACIO);
+      setDeriva(null);
+      setDerivaError(null);
+      setCartaControl(null);
+      setCartaControlError(null);
     } catch (err) {
       setError('Error al cargar el detalle del equipo');
       console.error(err);
     }
   };
+
+  // Análisis de deriva (tarea 3.4): se pide aparte del detalle porque
+  // implica una consulta y un cálculo propios (regresión por punto), no es
+  // parte del registro simple del equipo.
+  useEffect(() => {
+    if (!selected) return;
+    equipmentAPI
+      .driftAnalysis(selected.id)
+      .then((res) => setDeriva(res.data.data))
+      .catch(() => setDerivaError('Error al calcular el análisis de deriva'));
+  }, [selected]);
+
+  // Carta de control (tarea 4.4): segunda vista de estabilidad, independiente
+  // de la deriva — mismo criterio de "consulta aparte" que el efecto de arriba.
+  useEffect(() => {
+    if (!selected) return;
+    equipmentAPI
+      .controlChart(selected.id)
+      .then((res) => setCartaControl(res.data.data))
+      .catch(() => setCartaControlError('Error al calcular la carta de control'));
+  }, [selected]);
 
   const handleCreateEvento = async (e) => {
     e.preventDefault();
@@ -198,6 +276,36 @@ function Equipment() {
                       </span>
                     </td>
                     <td>{a.responsable || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {alertasEstabilidad.length > 0 && (
+        <div className="eq-alertas card">
+          <h2>⚠️ Alertas de estabilidad ({alertasEstabilidad.length})</h2>
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Patrón</th>
+                  <th>Tipo</th>
+                  <th>Punto</th>
+                  <th>Mensaje</th>
+                  <th>Detectada desde</th>
+                </tr>
+              </thead>
+              <tbody>
+                {alertasEstabilidad.map((a) => (
+                  <tr key={a.id} className="eq-row" onClick={() => openDetail(a.equipment_id)}>
+                    <td><strong>{a.equipo?.codigo}</strong> — {a.equipo?.nombre}</td>
+                    <td>{TIPOS_ALERTA_ESTABILIDAD[a.tipo] || a.tipo}</td>
+                    <td>{a.punto_medicion || '—'}</td>
+                    <td>{a.mensaje}</td>
+                    <td>{a.primera_deteccion}</td>
                   </tr>
                 ))}
               </tbody>
@@ -311,6 +419,16 @@ function Equipment() {
                   type="text"
                   value={formEquipo.hoja_de_vida}
                   onChange={(e) => setFormEquipo({ ...formEquipo, hoja_de_vida: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Error máximo permitido:</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={formEquipo.error_maximo_permitido}
+                  onChange={(e) => setFormEquipo({ ...formEquipo, error_maximo_permitido: e.target.value })}
+                  placeholder="Misma unidad que sus puntos calibrados"
                 />
               </div>
               <div className="form-group">
@@ -429,6 +547,7 @@ function Equipment() {
               <p><strong>Norma:</strong> {selected.norma || '—'}</p>
               <p><strong>Protocolo:</strong> {selected.protocolo || '—'}</p>
               <p><strong>Hoja de vida:</strong> {selected.hoja_de_vida || '—'}</p>
+              <p><strong>Error máximo permitido:</strong> {selected.error_maximo_permitido ?? '—'}</p>
               <p><strong>Responsable:</strong> {selected.responsable?.nombre || '—'}</p>
               <p><strong>Ingreso:</strong> {selected.fecha_ingreso || '—'}</p>
               <p className={claseVencimiento(selected.proxima_calibracion)}>
@@ -581,6 +700,110 @@ function Equipment() {
                   </tbody>
                 </table>
               </div>
+            )}
+
+            <h3>Análisis de deriva (Historial_Patrones)</h3>
+            {derivaError && <p className="eq-fecha-vencida">{derivaError}</p>}
+            {!deriva ? (
+              <p>Calculando…</p>
+            ) : deriva.length === 0 ? (
+              <p>Sin historial de calibración registrado para este patrón todavía.</p>
+            ) : (
+              deriva.map((analisisPunto) => {
+                const { datos, proyeccion } = construirDatosGrafico(analisisPunto);
+                return (
+                  <div key={analisisPunto.punto_medicion} className="eq-deriva-punto">
+                    <h4>Punto: {analisisPunto.punto_medicion}</h4>
+                    {!analisisPunto.suficientes_datos ? (
+                      <p>{analisisPunto.motivo_insuficiente}</p>
+                    ) : (
+                      <>
+                        <div style={{ width: '100%', height: 260 }}>
+                          <ResponsiveContainer>
+                            <LineChart data={datos}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="fecha" />
+                              <YAxis domain={['auto', 'auto']} />
+                              <Tooltip />
+                              <Legend />
+                              <Line type="monotone" dataKey="valor" name="Valor certificado" stroke="#00857d" dot connectNulls={false} />
+                              <Line type="monotone" dataKey="tendencia" name="Tendencia (regresión)" stroke="#b9770e" strokeDasharray="5 5" dot={false} />
+                              {proyeccion && (
+                                <ReferenceDot
+                                  x={proyeccion.fecha}
+                                  y={proyeccion.valor_proyectado}
+                                  r={5}
+                                  fill="#c0392b"
+                                  stroke="none"
+                                  label={{ value: 'Proyección', position: 'top', fill: '#c0392b', fontSize: 11 }}
+                                />
+                              )}
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <p>
+                          Pendiente: {analisisPunto.pendiente.toFixed(8)} {analisisPunto.historial[0].unidad}/día
+                          {proyeccion && (
+                            <> — Proyección al {proyeccion.fecha}: {proyeccion.valor_proyectado.toFixed(6)} {analisisPunto.historial[0].unidad}</>
+                          )}
+                        </p>
+                        {analisisPunto.alerta_error_maximo && (
+                          <p className={analisisPunto.alerta_error_maximo.supera ? 'eq-fecha-vencida' : ''}>
+                            {analisisPunto.alerta_error_maximo.supera ? '⚠️ ' : '✓ '}
+                            {analisisPunto.alerta_error_maximo.motivo}
+                          </p>
+                        )}
+                      </>
+                    )}
+                    {analisisPunto.alerta_incertidumbre_creciente.creciente && (
+                      <p className="eq-fecha-proxima">⚠️ {analisisPunto.alerta_incertidumbre_creciente.motivo}</p>
+                    )}
+                  </div>
+                );
+              })
+            )}
+
+            <h3>Carta de control (segunda vista de estabilidad)</h3>
+            {cartaControlError && <p className="eq-fecha-vencida">{cartaControlError}</p>}
+            {!cartaControl ? (
+              <p>Calculando…</p>
+            ) : cartaControl.length === 0 ? (
+              <p>Sin historial de calibración registrado para este patrón todavía.</p>
+            ) : (
+              cartaControl.map((analisisPunto) => (
+                <div key={analisisPunto.punto_medicion} className="eq-deriva-punto">
+                  <h4>Punto: {analisisPunto.punto_medicion}</h4>
+                  {!analisisPunto.suficientes_datos ? (
+                    <p>{analisisPunto.motivo_insuficiente}</p>
+                  ) : (
+                    <>
+                      <div style={{ width: '100%', height: 260 }}>
+                        <ResponsiveContainer>
+                          <LineChart data={analisisPunto.historial}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="fecha_calibracion" />
+                            <YAxis domain={['auto', 'auto']} />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="valor_certificado" name="Valor certificado" stroke="#00857d" dot />
+                            <ReferenceLine y={analisisPunto.limites.media} stroke="#555" strokeDasharray="3 3" label="Media" />
+                            <ReferenceLine y={analisisPunto.limites.limite_superior} stroke="#c0392b" strokeDasharray="5 5" label="LCS" />
+                            <ReferenceLine y={analisisPunto.limites.limite_inferior} stroke="#c0392b" strokeDasharray="5 5" label="LCI" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <p>
+                        Media: {analisisPunto.limites.media.toFixed(6)} — Límites de control: [{analisisPunto.limites.limite_inferior.toFixed(6)}, {analisisPunto.limites.limite_superior.toFixed(6)}]
+                      </p>
+                      {analisisPunto.puntos_fuera_de_control.length > 0 && (
+                        <p className="eq-fecha-vencida">
+                          ⚠️ {analisisPunto.puntos_fuera_de_control.length} punto(s) fuera de control: {analisisPunto.puntos_fuera_de_control.map((p) => `${p.fecha_calibracion} (${p.valor_certificado})`).join(', ')}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))
             )}
           </div>
         </div>
