@@ -73,6 +73,13 @@
   padding: 16px;
 }
 
+.cal-origen-cotizacion {
+  margin: -8px 0 16px;
+  border-left: 4px solid #00857d;
+  padding: 8px 16px;
+  background: #f2f7f6;
+}
+
 .cal-instrumentos-picker {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -111,6 +118,59 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.cal-plantilla-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal-patrones-lista {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  font-size: 12px;
+}
+
+.cal-uk-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  max-width: 220px;
+}
+
+.cal-uk-inputs input {
+  width: 55px;
+}
+
+.cal-datafiles-historial {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 12px;
+}
+
+.cal-datafiles-historial li {
+  border-top: 1px solid #eee;
+  padding: 6px 0;
+}
+
+.cal-datafiles-historial code {
+  background: #f2f7f6;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.cal-hash-ok {
+  color: #1e8449;
+  font-weight: 600;
+}
+
+.cal-hash-alterado {
+  color: #c0392b;
+  font-weight: 700;
 }
 
 .cal-cert-actions .btn-secondary {
@@ -166,6 +226,11 @@
   color: #6c3fa8;
 }
 
+.badge-ot-lista_para_facturar {
+  background: #fef9e7;
+  color: #9a7d0a;
+}
+
 .badge-ot-entregada {
   background: #eafaf1;
   color: #1e8449;
@@ -211,6 +276,16 @@
 .badge-cert-enviado {
   background: #eafaf1;
   color: #1e8449;
+}
+
+.badge-cert-superseded {
+  background: #f5eef8;
+  color: #6c3fa8;
+}
+
+.cal-enmienda-nota {
+  font-size: 11px;
+  color: #b9770e;
 }
 
 /* Modal (detalle de orden de trabajo) */

@@ -25,6 +25,7 @@ const ITEM_VACIO = {
   protocolo: '',
   cantidad: 1,
   precio_unitario: '',
+  acreditado: false,
 };
 
 const FORM_COTIZACION_VACIO = {
@@ -42,9 +43,16 @@ function money(value, moneda) {
   return `${moneda || 'CLP'} ${Number(value || 0).toLocaleString('es-CL')}`;
 }
 
-// Nota: este panel se integra como una pestaña dentro de Calibraciones.js
-// (<CotizacionesPanel clientes={clientes} puedeGestionar={puedeGestionar} />).
-function CotizacionesPanel({ clientes, puedeGestionar }) {
+// Este panel se integra como pestaña dentro de Calibraciones.js, que además
+// pasa los callbacks de navegación cruzada con Órdenes de Trabajo (tarea 1.3).
+function CotizacionesPanel({
+  clientes,
+  puedeGestionar,
+  onIniciarOrdenDesdeCotizacion,
+  onVerOrdenTrabajo,
+  cotizacionAAbrir,
+  onCotizacionAbierta,
+}) {
   const [vista, setVista] = useState('cotizaciones');
   const [error, setError] = useState(null);
 
@@ -197,6 +205,15 @@ function CotizacionesPanel({ clientes, puedeGestionar }) {
     }
   };
 
+  // Al volver desde "Ver cotización" en el detalle de una OT (ver Calibraciones.js).
+  useEffect(() => {
+    if (cotizacionAAbrir) {
+      abrirDetalle(cotizacionAAbrir);
+      onCotizacionAbierta();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cotizacionAAbrir]);
+
   const cerrarDetalle = () => { setDetalle(null); setHistorial([]); };
 
   const iniciarEdicion = (cot) => {
@@ -216,6 +233,7 @@ function CotizacionesPanel({ clientes, puedeGestionar }) {
       protocolo: it.protocolo,
       cantidad: it.cantidad,
       precio_unitario: it.precio_unitario,
+      acreditado: !!it.acreditado,
     })));
     cargarInstrumentosDeCliente(cot.cliente_id);
     setEditingId(cot.id);
@@ -384,6 +402,16 @@ function CotizacionesPanel({ clientes, puedeGestionar }) {
                       <label>Precio unitario *</label>
                       <input type="number" min="0" step="0.01" value={item.precio_unitario} onChange={(e) => handleItemChange(idx, 'precio_unitario', e.target.value)} required />
                     </div>
+                    <div className="form-group">
+                      <label className="cal-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={!!item.acreditado}
+                          onChange={(e) => handleItemChange(idx, 'acreditado', e.target.checked)}
+                        />
+                        Acreditado
+                      </label>
+                    </div>
                     <div className="cot-item-subtotal">
                       {money((Number(item.cantidad) || 0) * (Number(item.precio_unitario) || 0))}
                     </div>
@@ -539,7 +567,26 @@ function CotizacionesPanel({ clientes, puedeGestionar }) {
               <p><strong>Fecha emisión:</strong> {detalle.fecha_emision || '—'}</p>
               <p><strong>Válida hasta:</strong> {detalle.fecha_vencimiento || '—'}</p>
               <p><strong>Registrada por:</strong> {detalle.registrador?.nombre || '—'}</p>
+              <p>
+                <strong>Órdenes de trabajo:</strong>{' '}
+                {(detalle.ordenesTrabajo || []).length === 0 ? '—' : (
+                  detalle.ordenesTrabajo.map((ot, i) => (
+                    <span key={ot.id}>
+                      {i > 0 && ', '}
+                      <button type="button" className="cal-link-btn" onClick={() => onVerOrdenTrabajo(ot.id)}>{ot.codigo}</button>
+                    </span>
+                  ))
+                )}
+              </p>
             </div>
+
+            {puedeGestionar && detalle.estado === 'aceptada' && (
+              <div className="cal-estado-actions">
+                <button className="btn-primary" onClick={() => onIniciarOrdenDesdeCotizacion(detalle)}>
+                  📋 Crear OT desde esta cotización
+                </button>
+              </div>
+            )}
 
             {puedeGestionar && (
               <div className="cal-estado-actions">
@@ -560,6 +607,7 @@ function CotizacionesPanel({ clientes, puedeGestionar }) {
                   <tr>
                     <th>Descripción</th>
                     <th>Protocolo</th>
+                    <th>Acreditado</th>
                     <th>Cant.</th>
                     <th>P. unitario</th>
                     <th>Subtotal</th>
@@ -570,6 +618,11 @@ function CotizacionesPanel({ clientes, puedeGestionar }) {
                     <tr key={it.id}>
                       <td>{it.descripcion}</td>
                       <td>{it.protocolo}</td>
+                      <td>
+                        <span className={`badge ${it.acreditado ? 'badge-cal-activo' : 'badge-cal-inactivo'}`}>
+                          {it.acreditado ? 'Sí' : 'No'}
+                        </span>
+                      </td>
                       <td>{it.cantidad}</td>
                       <td>{money(it.precio_unitario, detalle.moneda)}</td>
                       <td>{money(it.subtotal, detalle.moneda)}</td>

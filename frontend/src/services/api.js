@@ -88,6 +88,10 @@ export const equipmentAPI = {
   create: (data) => api.post('/equipment', data),
   update: (id, data) => api.put(`/equipment/${id}`, data),
   createEvent: (id, data) => api.post(`/equipment/${id}/events`, data),
+  driftAnalysis: (id, params) => api.get(`/equipment/${id}/drift-analysis`, { params }),
+  controlChart: (id, params) => api.get(`/equipment/${id}/control-chart`, { params }),
+  stabilityAlerts: () => api.get('/equipment/stability-alerts'),
+  runStabilityAlertsJob: () => api.post('/equipment/stability-alerts/run'),
 };
 
 // PERSONAL
@@ -146,14 +150,36 @@ export const workOrdersAPI = {
   updateEstado: (id, data) => api.put(`/work-orders/${id}/estado`, data),
   addItem: (id, data) => api.post(`/work-orders/${id}/items`, data),
   updateItem: (itemId, data) => api.put(`/work-orders/items/${itemId}`, data),
+  billingQueue: (params) => api.get('/work-orders/billing-queue', { params }),
+  exportBillingQueueCsv: (params) => api.get('/work-orders/billing-queue/export', { params, responseType: 'blob' }),
+  markFacturada: (id) => api.patch(`/work-orders/${id}/facturada-externamente`),
+  addPatron: (itemId, equipment_id) => api.post(`/work-orders/items/${itemId}/patrones`, { equipment_id }),
+  removePatron: (itemId, equipmentId) => api.delete(`/work-orders/items/${itemId}/patrones/${equipmentId}`),
 };
 
 // CERTIFICADOS DE CALIBRACIÓN (Laboratorio de Calibraciones)
 export const certificatesAPI = {
   upload: (itemId, formData) => api.post(`/work-orders/items/${itemId}/certificate`, formData),
+  generate: (itemId, data) => api.post(`/work-orders/items/${itemId}/certificate/generate`, data),
+  issuanceCheck: (id) => api.get(`/work-orders/certificates/${id}/issuance-check`),
+  sign: (id) => api.post(`/work-orders/certificates/${id}/sign`),
   updateEstado: (id, data) => api.put(`/work-orders/certificates/${id}/estado`, data),
   send: (id, data) => api.post(`/work-orders/certificates/${id}/send`, data),
+  amend: (id, data) => api.post(`/work-orders/certificates/${id}/amend`, data),
   download: (id) => api.get(`/work-orders/certificates/${id}/download`, { responseType: 'blob' }),
+};
+
+// PLANTILLAS EXCEL (Laboratorio de Calibraciones)
+export const excelTemplatesAPI = {
+  list: (params) => api.get('/excel-templates', { params }),
+  download: (id) => api.get(`/excel-templates/${id}/download`, { responseType: 'blob' }),
+};
+
+// RAW DATA DE CALIBRACIÓN (Laboratorio de Calibraciones)
+export const calibrationDataFilesAPI = {
+  upload: (itemId, formData) => api.post(`/work-orders/items/${itemId}/data-files`, formData),
+  download: (id) => api.get(`/work-orders/data-files/${id}/download`, { responseType: 'blob' }),
+  verify: (id) => api.post(`/work-orders/data-files/${id}/verify`),
 };
 
 // DIRECCIONES DE CLIENTE (Laboratorio de Calibraciones)

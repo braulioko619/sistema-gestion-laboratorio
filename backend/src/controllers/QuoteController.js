@@ -5,6 +5,7 @@ const {
   ClientInstrument,
   PriceListItem,
   User,
+  WorkOrder,
   AuditLog,
   sequelize,
 } = require('../models');
@@ -29,6 +30,7 @@ const QUOTE_INCLUDES = [
       { model: PriceListItem, as: 'tarifa', attributes: ['id', 'tipo_instrumento', 'protocolo'] },
     ],
   },
+  { model: WorkOrder, as: 'ordenesTrabajo', attributes: ['id', 'codigo', 'estado'] },
 ];
 
 function round2(n) {
@@ -62,6 +64,7 @@ function prepararItems(itemsCrudos) {
       cantidad,
       precio_unitario,
       subtotal: round2(cantidad * precio_unitario),
+      acreditado: Boolean(raw.acreditado),
     };
   });
 }
@@ -98,9 +101,10 @@ exports.createQuote = async (req, res) => {
     const descuento = descuento_porcentaje || 0;
     const iva = iva_porcentaje === undefined || iva_porcentaje === null || iva_porcentaje === '' ? 19 : iva_porcentaje;
     const totales = calcularTotales(itemsPreparados, descuento, iva);
-    const codigo = await Quote.generarCodigo();
 
-    const cotizacionId = await sequelize.transaction(async (t) => {
+    const { cotizacionId, codigo } = await sequelize.transaction(async (t) => {
+      const codigo = await Quote.generarCodigo({ transaction: t });
+
       const cotizacion = await Quote.create({
         codigo,
         cliente_id,
@@ -118,7 +122,7 @@ exports.createQuote = async (req, res) => {
         { transaction: t }
       );
 
-      return cotizacion.id;
+      return { cotizacionId: cotizacion.id, codigo };
     });
 
     await AuditLog.create({

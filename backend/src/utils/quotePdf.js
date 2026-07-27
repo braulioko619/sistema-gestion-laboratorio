@@ -1,26 +1,9 @@
 const PDFDocument = require('pdfkit');
+const { drawHeader } = require('./pdfBranding');
 
 function formatMoney(value, moneda) {
   const number = Number(value || 0);
   return `${moneda || 'CLP'} ${number.toLocaleString('es-CL', { maximumFractionDigits: 2 })}`;
-}
-
-// Redibuja la marca de Lenor (mismas coordenadas que
-// frontend/src/assets/lenor-mark.svg) con primitivas de pdfkit, para no
-// depender de un archivo de imagen ráster.
-function drawLenorMark(doc, x, y, size) {
-  const scale = size / 220;
-  const sx = (px) => x + px * scale;
-  const sy = (py) => y + py * scale;
-
-  doc.save();
-  doc.lineCap('round');
-  doc.strokeColor('#00857d').lineWidth(46 * scale);
-  doc.moveTo(sx(188), sy(16)).lineTo(sx(66), sy(150)).stroke();
-  doc.moveTo(sx(80), sy(150)).lineTo(sx(138), sy(150)).stroke();
-  doc.fillColor('#00857d');
-  doc.polygon([sx(138), sy(116)], [sx(196), sy(150)], [sx(138), sy(184)]).fill();
-  doc.restore();
 }
 
 // Arma el PDF de la cotización y lo escribe directamente en la respuesta HTTP.
@@ -34,12 +17,7 @@ function buildQuotePdf(cotizacion, res) {
   res.setHeader('Content-Disposition', `attachment; filename="${cotizacion.codigo}.pdf"`);
   doc.pipe(res);
 
-  // Encabezado: marca + wordmark "LENOR" dibujado a mano (mismo estilo que el
-  // navbar) más el texto descriptivo al lado.
-  drawLenorMark(doc, 50, 40, 40);
-  doc.font('Helvetica-Bold').fontSize(18).fillColor('#00857d').text('LENOR', 100, 45);
-  doc.font('Helvetica').fontSize(10).fillColor('#333').text('Gestión de laboratorio', 100, 66);
-  doc.fontSize(9).fillColor('#666').text('Laboratorio de Calibraciones — ISO/IEC 17025', 100, 80);
+  drawHeader(doc);
 
   doc.fontSize(16).fillColor('#000').text(`Cotización ${cotizacion.codigo}`, 50, 115);
   doc.fontSize(9).fillColor('#666');
@@ -73,13 +51,14 @@ function buildQuotePdf(cotizacion, res) {
 
   // Tabla de ítems
   y += 15;
-  const cols = { desc: 50, protocolo: 220, cant: 340, precio: 385, subtotal: 465 };
+  const cols = { desc: 50, protocolo: 200, acred: 305, cant: 345, precio: 390, subtotal: 465 };
   const tableRight = 545;
 
   doc.rect(50, y, tableRight - 50, 20).fill('#00857d');
   doc.fillColor('#fff').fontSize(9);
   doc.text('Descripción', cols.desc + 4, y + 6, { width: cols.protocolo - cols.desc - 8 });
-  doc.text('Protocolo', cols.protocolo + 4, y + 6, { width: cols.cant - cols.protocolo - 8 });
+  doc.text('Protocolo', cols.protocolo + 4, y + 6, { width: cols.acred - cols.protocolo - 8 });
+  doc.text('Acred.', cols.acred + 4, y + 6, { width: cols.cant - cols.acred - 8 });
   doc.text('Cant.', cols.cant + 4, y + 6, { width: cols.precio - cols.cant - 8 });
   doc.text('P. Unit.', cols.precio + 4, y + 6, { width: cols.subtotal - cols.precio - 8 });
   doc.text('Subtotal', cols.subtotal + 4, y + 6, { width: tableRight - cols.subtotal - 4 });
@@ -96,7 +75,8 @@ function buildQuotePdf(cotizacion, res) {
     }
     doc.fillColor('#000').fontSize(8.5);
     doc.text(item.descripcion, cols.desc + 4, y + 6, { width: cols.protocolo - cols.desc - 8 });
-    doc.text(item.protocolo, cols.protocolo + 4, y + 6, { width: cols.cant - cols.protocolo - 8 });
+    doc.text(item.protocolo, cols.protocolo + 4, y + 6, { width: cols.acred - cols.protocolo - 8 });
+    doc.text(item.acreditado ? 'Sí' : 'No', cols.acred + 4, y + 6, { width: cols.cant - cols.acred - 8 });
     doc.text(String(item.cantidad), cols.cant + 4, y + 6, { width: cols.precio - cols.cant - 8 });
     doc.text(formatMoney(item.precio_unitario, cotizacion.moneda), cols.precio + 4, y + 6, { width: cols.subtotal - cols.precio - 8 });
     doc.text(formatMoney(item.subtotal, cotizacion.moneda), cols.subtotal + 4, y + 6, { width: tableRight - cols.subtotal - 4 });
