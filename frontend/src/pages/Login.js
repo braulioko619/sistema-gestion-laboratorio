@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { MICROSOFT_LOGIN_URL } from '../services/api';
-import lenorMark from '../assets/lenor-mark.svg';
 import './Login.css';
+
+const lenorLogo = `${process.env.PUBLIC_URL}/Lenor_LogotipoVertical_ColorPositivo.png`;
 
 function Login() {
   const [email, setEmail] = useState('admin@laboratorio.com');
@@ -32,8 +33,7 @@ function Login() {
     <div className="login-container">
       <div className="login-card">
         <div className="login-brand">
-          <img src={lenorMark} alt="Lenor" className="login-logo" />
-          <span className="login-brand-name">LENOR</span>
+          <img src={lenorLogo} alt="Lenor" className="login-logo" />
         </div>
         <h1>Sistema de Gestión de Laboratorio</h1>
         <p className="subtitle">ISO/IEC 17025 · ISO 10720</p>

@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiLogOut } from 'react-icons/fi';
-import lenorMark from '../assets/lenor-mark.svg';
 import './Navbar.css';
+
+const lenorLogo = `${process.env.PUBLIC_URL}/Lenor_LogotipoVertical_ColorPositivo.png`;
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -16,9 +17,8 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          <img src={lenorMark} alt="Lenor" className="brand-mark" />
+          <img src={lenorLogo} alt="Lenor" className="brand-mark" />
           <span className="brand-text">
-            LENOR
             <small>Sistema de Gestión de Laboratorio</small>
           </span>
         </Link>

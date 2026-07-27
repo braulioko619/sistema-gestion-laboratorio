@@ -25,15 +25,8 @@
 }
 
 .login-logo {
-  height: 48px;
+  height: 96px;
   width: auto;
-}
-
-.login-brand-name {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--primary-color);
 }
 
 .login-card h1 {
