@@ -9,10 +9,14 @@
     "migrate": "sequelize-cli db:migrate",
     "migrate:undo": "sequelize-cli db:migrate:undo",
     "seed": "sequelize-cli db:seed:all",
-    "seed:undo": "sequelize-cli db:seed:undo:all"
+    "seed:undo": "sequelize-cli db:seed:undo:all",
+    "pretest": "node scripts/ensure-test-db.js",
+    "test": "jest",
+    "verify-audit-chain": "node scripts/verify-audit-chain.js"
   },
   "dependencies": {
     "@azure/msal-node": "^5.4.2",
+    "ajv": "^8.20.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -22,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "^2.0.0",
+    "node-cron": "^4.6.0",
     "nodemailer": "^6.9.14",
     "pdfkit": "^0.19.1",
     "pg": "^8.11.5",
@@ -32,7 +37,9 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.0",
-    "sequelize-cli": "^6.6.2"
+    "sequelize-cli": "^6.6.2",
+    "supertest": "^7.2.2"
   }
 }

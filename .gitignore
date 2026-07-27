@@ -1,3 +1,7 @@
+# Archivos subidos en desarrollo/pruebas (certificados, Excel, CSV) — datos
+# de runtime, no código fuente.
+backend/uploads/
+
 # Logs
 logs
 *.log

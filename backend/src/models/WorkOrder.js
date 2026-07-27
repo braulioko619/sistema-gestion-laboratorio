@@ -15,6 +15,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: false,
     },
+    quote_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      comment: 'Cotización de origen, si la OT se creó a partir de una',
+    },
     fecha_ingreso: {
       type: DataTypes.DATEONLY,
       allowNull: false,
@@ -33,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
         'en_proceso',
         'calibrada',
         'certificado_emitido',
+        'lista_para_facturar',
         'entregada',
         'cancelada'
       ),
@@ -48,6 +54,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    facturada_externamente: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    fecha_facturacion_externa: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
     creado_por: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -58,16 +73,9 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   // Genera el siguiente código correlativo del año en curso: OT-2026-001
-  WorkOrder.generarCodigo = async function () {
-    const year = new Date().getFullYear();
-    const { Op } = require('sequelize');
-    const count = await WorkOrder.count({
-      where: {
-        codigo: { [Op.like]: `OT-${year}-%` },
-      },
-    });
-    const correlativo = String(count + 1).padStart(3, '0');
-    return `OT-${year}-${correlativo}`;
+  WorkOrder.generarCodigo = async function (options = {}) {
+    const CorrelativeService = require('../services/CorrelativeService');
+    return CorrelativeService.next('orden_trabajo', options);
   };
 
   WorkOrder.associate = (models) => {
@@ -78,6 +86,10 @@ module.exports = (sequelize, DataTypes) => {
     WorkOrder.belongsTo(models.User, {
       foreignKey: 'responsable_id',
       as: 'responsable',
+    });
+    WorkOrder.belongsTo(models.Quote, {
+      foreignKey: 'quote_id',
+      as: 'cotizacion',
     });
     WorkOrder.belongsTo(models.User, {
       foreignKey: 'creado_por',

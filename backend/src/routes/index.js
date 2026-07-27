@@ -16,6 +16,9 @@ router.use('/accreditations', require('./accreditation.routes'));
 router.use('/commercial-documents', require('./commercialdocument.routes'));
 router.use('/price-list', require('./pricelist.routes'));
 router.use('/quotes', require('./quote.routes'));
+router.use('/software-validations', require('./softwarevalidation.routes'));
+router.use('/excel-templates', require('./exceltemplate.routes'));
+router.use('/calibration-form-templates', require('./calibrationformtemplate.routes'));
 
 router.get('/health', (req, res) => {
   res.json({

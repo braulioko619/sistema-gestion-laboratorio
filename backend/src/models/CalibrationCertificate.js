@@ -26,9 +26,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     estado: {
-      type: DataTypes.ENUM('borrador', 'firmado', 'emitido', 'enviado'),
+      type: DataTypes.ENUM('borrador', 'firmado', 'emitido', 'enviado', 'superseded'),
       allowNull: false,
       defaultValue: 'borrador',
+    },
+    acreditado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Heredado del work_order_item al crear el certificado; no editable después por API',
     },
     nombre_original: {
       type: DataTypes.STRING,
@@ -45,6 +51,24 @@ module.exports = (sequelize, DataTypes) => {
     },
     tamano_bytes: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    decision_rule: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Regla de decisión de conformidad (ISO 17025 7.8.6)',
+    },
+    sha256_pdf: {
+      type: DataTypes.STRING(64),
+      allowNull: true,
+    },
+    supersede_a_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      comment: 'Si este certificado es una enmienda, apunta al certificado que reemplaza (7.8.8)',
+    },
+    motivo_enmienda: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     enviado_a: {
@@ -70,16 +94,9 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   // Genera el siguiente código correlativo del año en curso: CERT-2026-001
-  CalibrationCertificate.generarCodigo = async function () {
-    const year = new Date().getFullYear();
-    const { Op } = require('sequelize');
-    const count = await CalibrationCertificate.count({
-      where: {
-        codigo: { [Op.like]: `CERT-${year}-%` },
-      },
-    });
-    const correlativo = String(count + 1).padStart(3, '0');
-    return `CERT-${year}-${correlativo}`;
+  CalibrationCertificate.generarCodigo = async function (options = {}) {
+    const CorrelativeService = require('../services/CorrelativeService');
+    return CorrelativeService.next('certificado', options);
   };
 
   CalibrationCertificate.associate = (models) => {
@@ -90,6 +107,21 @@ module.exports = (sequelize, DataTypes) => {
     CalibrationCertificate.belongsTo(models.User, {
       foreignKey: 'creado_por',
       as: 'registrador',
+    });
+    CalibrationCertificate.hasMany(models.CertificateSignature, {
+      foreignKey: 'certificate_id',
+      as: 'firmas',
+    });
+    // Cadena de enmiendas (tarea 2.9 / D4 / ISO 17025 7.8.8): la enmienda
+    // apunta hacia atrás al certificado que reemplaza; el original expone
+    // hacia adelante cuál lo reemplazó (si ya fue enmendado).
+    CalibrationCertificate.belongsTo(models.CalibrationCertificate, {
+      foreignKey: 'supersede_a_id',
+      as: 'certificadoOriginal',
+    });
+    CalibrationCertificate.hasOne(models.CalibrationCertificate, {
+      foreignKey: 'supersede_a_id',
+      as: 'enmendadoPor',
     });
   };
 

@@ -84,12 +84,9 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
   });
 
-  Quote.generarCodigo = async function () {
-    const year = new Date().getFullYear();
-    const { Op } = require('sequelize');
-    const count = await Quote.count({ where: { codigo: { [Op.like]: `COT-${year}-%` } } });
-    const correlativo = String(count + 1).padStart(3, '0');
-    return `COT-${year}-${correlativo}`;
+  Quote.generarCodigo = async function (options = {}) {
+    const CorrelativeService = require('../services/CorrelativeService');
+    return CorrelativeService.next('cotizacion', options);
   };
 
   Quote.associate = (models) => {
@@ -105,6 +102,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'cotizacion_id',
       as: 'items',
       onDelete: 'CASCADE',
+    });
+    Quote.hasMany(models.WorkOrder, {
+      foreignKey: 'quote_id',
+      as: 'ordenesTrabajo',
     });
   };
 
