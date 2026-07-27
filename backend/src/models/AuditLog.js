@@ -63,6 +63,24 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    // secuencia/hash_anterior/hash_actual (tarea 4.5): calculados por el
+    // trigger `audit_logs_hash_chain` en Postgres, nunca asignados desde la
+    // app. Sin declararlos aquí, Sequelize los deja fuera del RETURNING del
+    // INSERT y quedan undefined en la instancia recién creada aunque la fila
+    // en BD sí los tenga (mismo motivo que el comentario de `timestamp`
+    // arriba).
+    secuencia: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+    },
+    hash_anterior: {
+      type: DataTypes.STRING(64),
+      allowNull: true,
+    },
+    hash_actual: {
+      type: DataTypes.STRING(64),
+      allowNull: true,
+    },
   }, {
     tableName: 'audit_logs',
     timestamps: false,
