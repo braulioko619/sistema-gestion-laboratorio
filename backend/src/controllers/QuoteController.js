@@ -37,6 +37,14 @@ function round2(n) {
   return Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 }
 
+const MODALIDADES_VALIDAS = ['laboratorio', 'terreno'];
+
+function numeroPositivo(valor, etiqueta, posicion) {
+  const numero = Number(valor) || 0;
+  if (numero < 0) throw new Error(`Ítem ${posicion}: ${etiqueta} no puede ser negativo`);
+  return numero;
+}
+
 function prepararItems(itemsCrudos) {
   if (!Array.isArray(itemsCrudos) || itemsCrudos.length === 0) {
     throw new Error('Debe agregar al menos un ítem a la cotización');
@@ -50,10 +58,39 @@ function prepararItems(itemsCrudos) {
     const cantidad = Number(raw.cantidad) || 1;
     if (cantidad <= 0) throw new Error(`Ítem ${posicion}: la cantidad debe ser mayor a 0`);
 
-    const precio_unitario = Number(raw.precio_unitario);
-    if (Number.isNaN(precio_unitario) || precio_unitario < 0) {
-      throw new Error(`Ítem ${posicion}: el precio unitario no es válido`);
+    const modalidad = MODALIDADES_VALIDAS.includes(raw.modalidad) ? raw.modalidad : 'laboratorio';
+
+    const precioBaseCrudo = raw.precio_base !== undefined && raw.precio_base !== null && raw.precio_base !== ''
+      ? raw.precio_base
+      : raw.precio_unitario;
+    const precio_base = Number(precioBaseCrudo);
+    if (Number.isNaN(precio_base) || precio_base < 0) {
+      throw new Error(`Ítem ${posicion}: el precio base no es válido`);
     }
+
+    const distancia_km = numeroPositivo(raw.distancia_km, 'la distancia', posicion);
+    const tarifa_km = numeroPositivo(raw.tarifa_km, 'la tarifa por km', posicion);
+    const tiempo_traslado_horas = numeroPositivo(raw.tiempo_traslado_horas, 'el tiempo de traslado', posicion);
+    const tarifa_hora_traslado = numeroPositivo(raw.tarifa_hora_traslado, 'la tarifa por hora de traslado', posicion);
+    const horas_hombre = numeroPositivo(raw.horas_hombre, 'las horas hombre', posicion);
+    const tarifa_hora_hombre = numeroPositivo(raw.tarifa_hora_hombre, 'la tarifa por hora hombre', posicion);
+
+    // El valor de traslado puede venir ya calculado (distancia_km * tarifa_km) o ajustado
+    // manualmente por el usuario; en ambos casos se respeta el valor recibido.
+    const valor_traslado = numeroPositivo(
+      raw.valor_traslado !== undefined && raw.valor_traslado !== null && raw.valor_traslado !== ''
+        ? raw.valor_traslado
+        : distancia_km * tarifa_km,
+      'el valor de traslado',
+      posicion
+    );
+
+    const costo_traslado = valor_traslado + tiempo_traslado_horas * tarifa_hora_traslado;
+    const costo_mano_obra = horas_hombre * tarifa_hora_hombre;
+
+    const precio_unitario = modalidad === 'terreno'
+      ? round2(precio_base + costo_traslado + costo_mano_obra)
+      : round2(precio_base);
 
     return {
       instrumento_cliente_id: raw.instrumento_cliente_id || null,
@@ -62,6 +99,15 @@ function prepararItems(itemsCrudos) {
       tipo_instrumento: raw.tipo_instrumento,
       protocolo: raw.protocolo,
       cantidad,
+      modalidad,
+      precio_base: round2(precio_base),
+      distancia_km,
+      tarifa_km,
+      valor_traslado: round2(valor_traslado),
+      tiempo_traslado_horas,
+      tarifa_hora_traslado,
+      horas_hombre,
+      tarifa_hora_hombre,
       precio_unitario,
       subtotal: round2(cantidad * precio_unitario),
       acreditado: Boolean(raw.acreditado),

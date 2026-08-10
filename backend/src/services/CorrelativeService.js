@@ -5,6 +5,7 @@ const PREFIJOS = {
   orden_trabajo: 'OT',
   certificado: 'CERT',
   cotizacion: 'COT',
+  muestra: 'MU',
 };
 
 // Incrementa de forma atómica el correlativo (tipo, año) con un UPSERT de

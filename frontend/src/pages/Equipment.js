@@ -113,11 +113,15 @@ function Equipment() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const params = filtroEstado ? { estado: filtroEstado } : {};
+      // categoria fija en 'patron_calibracion': separa este listado del de
+      // Control Metrológico (equipo_laboratorio), que antes de agregar este
+      // filtro se mezclaban en una sola lista.
+      const params = { categoria: 'patron_calibracion' };
+      if (filtroEstado) params.estado = filtroEstado;
       const [eqRes, alertRes, estabilidadRes] = await Promise.all([
         equipmentAPI.list(params),
-        equipmentAPI.alerts(),
-        equipmentAPI.stabilityAlerts(),
+        equipmentAPI.alerts({ categoria: 'patron_calibracion' }),
+        equipmentAPI.stabilityAlerts({ categoria: 'patron_calibracion' }),
       ]);
       setEquipos(eqRes.data.data);
       setAlertas(alertRes.data.data);

@@ -12,9 +12,15 @@ const ROLES_GESTION = ['administrador', 'jefe_laboratorio', 'personal_calidad'];
 router.get('/', InternalAuditController.getAudits);
 router.get('/summary', InternalAuditController.getAuditSummary);
 router.get('/:id', InternalAuditController.getAuditById);
+router.get('/:id/pdf', InternalAuditController.downloadAuditPdf);
 
 router.post('/', authorizeRole(ROLES_GESTION), InternalAuditController.createAudit);
 router.put('/:id', authorizeRole(ROLES_GESTION), InternalAuditController.updateAudit);
+router.put(
+  '/:id/checklist',
+  authorizeRole(ROLES_GESTION),
+  InternalAuditController.updateAuditChecklist
+);
 router.post(
   '/:id/findings',
   authorizeRole(ROLES_GESTION),

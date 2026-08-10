@@ -70,6 +70,16 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'operativo',
     },
+    categoria: {
+      type: DataTypes.ENUM('patron_calibracion', 'equipo_laboratorio'),
+      allowNull: false,
+      defaultValue: 'patron_calibracion',
+      comment: 'patron_calibracion: patrón del laboratorio de calibraciones. equipo_laboratorio: equipo de ensayo de una sede (Control Metrológico)',
+    },
+    sede: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     fecha_ingreso: {
       type: DataTypes.DATEONLY,
       allowNull: true,
@@ -127,6 +137,18 @@ module.exports = (sequelize, DataTypes) => {
     Equipment.hasMany(models.StandardCalibrationHistory, {
       foreignKey: 'equipment_id',
       as: 'historialCalibraciones',
+    });
+    Equipment.hasMany(models.EquipmentImage, {
+      foreignKey: 'equipment_id',
+      as: 'imagenes',
+    });
+    Equipment.hasMany(models.EquipmentDocument, {
+      foreignKey: 'equipment_id',
+      as: 'documentos',
+    });
+    Equipment.hasMany(models.EquipmentLogEntry, {
+      foreignKey: 'equipment_id',
+      as: 'bitacora',
     });
   };
 

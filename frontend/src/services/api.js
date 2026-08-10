@@ -90,8 +90,37 @@ export const equipmentAPI = {
   createEvent: (id, data) => api.post(`/equipment/${id}/events`, data),
   driftAnalysis: (id, params) => api.get(`/equipment/${id}/drift-analysis`, { params }),
   controlChart: (id, params) => api.get(`/equipment/${id}/control-chart`, { params }),
-  stabilityAlerts: () => api.get('/equipment/stability-alerts'),
+  stabilityAlerts: (params) => api.get('/equipment/stability-alerts', { params }),
   runStabilityAlertsJob: () => api.post('/equipment/stability-alerts/run'),
+
+  // Historial de calibración (StandardCalibrationHistory): puntos medidos +
+  // certificado opcional. Genérico por equipment_id, reutilizado tanto para
+  // patrones de calibración como para equipos de Control Metrológico.
+  registerCalibrationHistory: (id, formData) => api.post(`/equipment/${id}/calibration-history`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  calibrationHistory: (id, params) => api.get(`/equipment/${id}/calibration-history`, { params }),
+  downloadCertificate: (historyId) => api.get(`/equipment/calibration-history/${historyId}/certificado`, { responseType: 'blob' }),
+
+  // Imágenes referenciales
+  uploadImages: (id, formData) => api.post(`/equipment/${id}/images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  listImages: (id) => api.get(`/equipment/${id}/images`),
+  imageBlob: (imageId) => api.get(`/equipment/images/${imageId}/file`, { responseType: 'blob' }),
+  setPrincipalImage: (imageId) => api.put(`/equipment/images/${imageId}/principal`),
+  deleteImage: (imageId) => api.delete(`/equipment/images/${imageId}`),
+
+  // Documentos (manuales, protocolos, fichas técnicas, otros)
+  uploadDocuments: (id, formData) => api.post(`/equipment/${id}/documents`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  listDocuments: (id, params) => api.get(`/equipment/${id}/documents`, { params }),
+  downloadDocument: (documentId) => api.get(`/equipment/documents/${documentId}/download`, { responseType: 'blob' }),
+
+  // Bitácora del instrumento con control de cambio
+  createLogEntry: (id, data) => api.post(`/equipment/${id}/log`, data),
+  listLogEntries: (id) => api.get(`/equipment/${id}/log`),
 };
 
 // PERSONAL
@@ -111,7 +140,16 @@ export const internalAuditsAPI = {
   summary: (params) => api.get('/internal-audits/summary', { params }),
   create: (data) => api.post('/internal-audits', data),
   update: (id, data) => api.put(`/internal-audits/${id}`, data),
+  updateChecklist: (id, data) => api.put(`/internal-audits/${id}/checklist`, data),
   createFinding: (id, data) => api.post(`/internal-audits/${id}/findings`, data),
+  downloadPdf: (id) => api.get(`/internal-audits/${id}/pdf`, { responseType: 'blob' }),
+};
+
+// PLANTILLA DEL CHECKLIST DE AUDITORÍAS (ISO/IEC 17025)
+export const checklistTemplateAPI = {
+  list: (params) => api.get('/checklist-template', { params }),
+  create: (data) => api.post('/checklist-template', data),
+  update: (id, data) => api.put(`/checklist-template/${id}`, data),
 };
 
 // AUDIT
@@ -123,6 +161,7 @@ export const auditAPI = {
 // USERS
 export const usersAPI = {
   list: () => api.get('/users'),
+  changeState: (id, estado) => api.patch(`/users/${id}/state`, { estado }),
 };
 
 // CLIENTES (Laboratorio de Calibraciones)
@@ -155,6 +194,29 @@ export const workOrdersAPI = {
   markFacturada: (id) => api.patch(`/work-orders/${id}/facturada-externamente`),
   addPatron: (itemId, equipment_id) => api.post(`/work-orders/items/${itemId}/patrones`, { equipment_id }),
   removePatron: (itemId, equipmentId) => api.delete(`/work-orders/items/${itemId}/patrones/${equipmentId}`),
+};
+
+// DASHBOARD (Laboratorio de Calibraciones)
+export const dashboardAPI = {
+  calibraciones: () => api.get('/dashboard/calibraciones'),
+};
+
+// CALENDARIZACIÓN DE SERVICIOS (Laboratorio de Calibraciones)
+export const serviceVisitsAPI = {
+  list: (params) => api.get('/service-visits', { params }),
+  get: (id) => api.get(`/service-visits/${id}`),
+  create: (data) => api.post('/service-visits', data),
+  update: (id, data) => api.put(`/service-visits/${id}`, data),
+};
+
+// RECEPCIÓN DE MUESTRAS (Laboratorio de Calibraciones)
+export const samplesAPI = {
+  list: (params) => api.get('/samples', { params }),
+  get: (id) => api.get(`/samples/${id}`),
+  create: (data) => api.post('/samples', data),
+  update: (id, data) => api.put(`/samples/${id}`, data),
+  assign: (id, work_order_id) => api.post(`/samples/${id}/assign`, { work_order_id }),
+  createWorkOrder: (id, data) => api.post(`/samples/${id}/create-work-order`, data),
 };
 
 // CERTIFICADOS DE CALIBRACIÓN (Laboratorio de Calibraciones)

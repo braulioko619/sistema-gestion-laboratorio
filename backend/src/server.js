@@ -45,6 +45,28 @@ async function start() {
       }
     });
 
+    // Bajo NSSM (servicio de Windows), detener/reiniciar el servicio envía
+    // un evento de consola que Node traduce a SIGINT; sin este handler el
+    // proceso moría en seco, sin drenar requests ni cerrar el pool a Postgres.
+    let shuttingDown = false;
+    function shutdown(signal) {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      logger.info(`Señal ${signal} recibida, cerrando servidor...`);
+      server.close(() => {
+        db.sequelize
+          .close()
+          .then(() => logger.info('Conexiones a la base de datos cerradas.'))
+          .catch((err) => logger.error(`Error cerrando la base de datos: ${err.message}`))
+          .finally(() => process.exit(0));
+      });
+      // Si algo queda colgado (requests que no terminan), fuerza la salida.
+      setTimeout(() => process.exit(1), 10000).unref();
+    }
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+
   } catch (error) {
     logger.error(`No se pudo iniciar el servidor: ${error.message}`);
     console.error('Error al iniciar:', error);

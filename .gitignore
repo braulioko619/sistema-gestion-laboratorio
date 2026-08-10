@@ -2,6 +2,9 @@
 # de runtime, no código fuente.
 backend/uploads/
 
+# Respaldos de base de datos (pg_dump)
+backend/backups/
+
 # Logs
 logs
 *.log

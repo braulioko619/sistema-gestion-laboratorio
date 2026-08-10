@@ -1,0 +1,239 @@
+.cm-container {
+  padding: 20px 0;
+}
+
+.cm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.cm-subtitle {
+  color: var(--text-light, #698184);
+  margin-bottom: 20px;
+}
+
+.cm-form {
+  margin-bottom: 20px;
+}
+
+.cm-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+}
+
+.cm-filters {
+  margin-bottom: 15px;
+}
+
+.cm-filters select {
+  margin-left: 8px;
+  padding: 6px;
+}
+
+.cm-row {
+  cursor: pointer;
+}
+
+.cm-row:hover {
+  background: #f5f7fa;
+}
+
+.cm-fecha-vencida {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.cm-fecha-proxima {
+  color: #b9770e;
+  font-weight: 600;
+}
+
+.badge-eq-operativo {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+.badge-eq-en_calibracion {
+  background: var(--secondary-light);
+  color: var(--secondary-dark);
+}
+
+.badge-eq-en_mantenimiento {
+  background: #fef5e7;
+  color: #b9770e;
+}
+
+.badge-eq-fuera_servicio {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.badge-eq-dado_de_baja {
+  background: #f2f3f4;
+  color: #566573;
+}
+
+/* Modal */
+.cm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.cm-modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 880px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.cm-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cm-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.cm-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 4px 16px;
+  margin-bottom: 12px;
+}
+
+/* Sub-pestañas dentro del detalle del equipo */
+.cm-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0;
+  border-bottom: 1px solid var(--border-color, #d5e4e1);
+}
+
+.cm-tab {
+  background: none;
+  color: var(--text-light, #698184);
+  border-radius: 7px 7px 0 0;
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.cm-tab.active {
+  background: var(--light-bg, #f2f7f6);
+  color: var(--primary-color, #00857d);
+  border-bottom: 3px solid var(--primary-color, #00857d);
+}
+
+.cm-tab-panel {
+  padding-top: 4px;
+}
+
+.cm-deriva-punto {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.cm-subform {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 14px;
+  margin: 10px 0;
+}
+
+.cm-punto-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.cm-punto-row input {
+  width: 100%;
+}
+
+.cm-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.cm-image-card {
+  position: relative;
+  border: 1px solid var(--border-color, #d5e4e1);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.cm-image-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.cm-image-card .cm-image-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: 0.78rem;
+}
+
+.cm-image-card.principal {
+  border-color: var(--primary-color, #00857d);
+  box-shadow: 0 0 0 2px var(--primary-color, #00857d);
+}
+
+.cm-badge-principal {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: var(--primary-color, #00857d);
+  color: #fff;
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cm-doc-categoria {
+  text-transform: capitalize;
+}
+
+.cm-bitacora-entry {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+
+.cm-bitacora-corrige {
+  color: var(--text-light, #698184);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.cm-empty {
+  color: var(--text-light, #698184);
+  font-style: italic;
+}

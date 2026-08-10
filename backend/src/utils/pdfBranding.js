@@ -1,28 +1,27 @@
-// Redibuja la marca de Lenor (mismas coordenadas que
-// frontend/src/assets/lenor-mark.svg) con primitivas de pdfkit, para no
-// depender de un archivo de imagen ráster. Compartido entre quotePdf.js y
-// certificatePdf.js: mismo encabezado visual en todos los PDF generados.
-function drawLenorMark(doc, x, y, size) {
-  const scale = size / 220;
-  const sx = (px) => x + px * scale;
-  const sy = (py) => y + py * scale;
+const path = require('path');
 
-  doc.save();
-  doc.lineCap('round');
-  doc.strokeColor('#00857d').lineWidth(46 * scale);
-  doc.moveTo(sx(188), sy(16)).lineTo(sx(66), sy(150)).stroke();
-  doc.moveTo(sx(80), sy(150)).lineTo(sx(138), sy(150)).stroke();
-  doc.fillColor('#00857d');
-  doc.polygon([sx(138), sy(116)], [sx(196), sy(150)], [sx(138), sy(184)]).fill();
-  doc.restore();
-}
+// Logotipo oficial de Lenor (mismo archivo usado en frontend/public), copiado
+// a este directorio porque backend y frontend son builds Docker independientes
+// y el contenedor de backend no tiene acceso a la carpeta frontend/public.
+const LOGO_PATH = path.join(__dirname, '../assets/Lenor_LogotipoVertical_ColorPositivo.png');
+// Proporción real del contenido visible dentro del PNG (ancho/alto), para
+// no deformar el logo al escalarlo por altura.
+const LOGO_ASPECT_RATIO = 1149 / 1201;
 
-// Encabezado estándar: marca + wordmark "LENOR" + texto descriptivo.
+// Encabezado estándar: logo (marca + wordmark) + texto descriptivo.
+// Compartido entre quotePdf.js y certificatePdf.js: mismo encabezado visual
+// en todos los PDF generados.
 function drawHeader(doc, subtitulo) {
-  drawLenorMark(doc, 50, 40, 40);
-  doc.font('Helvetica-Bold').fontSize(18).fillColor('#00857d').text('LENOR', 100, 45);
-  doc.font('Helvetica').fontSize(10).fillColor('#333').text('Gestión de laboratorio', 100, 66);
-  doc.fontSize(9).fillColor('#666').text(subtitulo || 'Laboratorio de Calibraciones — ISO/IEC 17025', 100, 80);
+  const logoHeight = 50;
+  const logoWidth = logoHeight * LOGO_ASPECT_RATIO;
+  const logoX = 50;
+  const logoY = 35;
+
+  doc.image(LOGO_PATH, logoX, logoY, { height: logoHeight });
+
+  const textoX = logoX + logoWidth + 14;
+  doc.font('Helvetica').fontSize(10).fillColor('#333').text('Gestión de laboratorio', textoX, logoY + 16);
+  doc.fontSize(9).fillColor('#666').text(subtitulo || 'Laboratorio de Calibraciones — ISO/IEC 17025', textoX, logoY + 30);
 }
 
-module.exports = { drawLenorMark, drawHeader };
+module.exports = { drawHeader };

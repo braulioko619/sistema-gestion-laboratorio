@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { personnelAPI } from '../services/api';
+import { personnelAPI, usersAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './Personnel.css';
 
@@ -46,6 +46,8 @@ function Personnel() {
   // La matriz de competencias (otorgar/revocar autorizaciones) también la
   // mantiene calidad, a diferencia del expediente (formación/capacitación).
   const puedeGestionarAutorizaciones = ['administrador', 'jefe_laboratorio', 'personal_calidad'].includes(user?.rol);
+  // Eliminar del listado usa el cambio de estado de usuario, restringido a administrador en el backend.
+  const puedeEliminar = user?.rol === 'administrador';
 
   const fetchData = async () => {
     try {
@@ -123,6 +125,21 @@ function Personnel() {
       fetchData();
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Error al otorgar la autorización');
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (persona) => {
+    const confirmado = window.confirm(
+      `¿Eliminar a ${persona.nombre} ${persona.apellido || ''} del listado de personal?`
+    );
+    if (!confirmado) return;
+    try {
+      const res = await usersAPI.changeState(persona.id, 'inactivo');
+      alert(res.data.message);
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Error al eliminar del listado');
       console.error(err);
     }
   };
@@ -212,6 +229,7 @@ function Personnel() {
                 <th>Registros</th>
                 <th>Eval. competencia</th>
                 <th>Autorizaciones vigentes</th>
+                {puedeEliminar && <th></th>}
               </tr>
             </thead>
             <tbody>
@@ -231,6 +249,19 @@ function Personnel() {
                     )}
                   </td>
                   <td>{p.autorizaciones_vigentes}</td>
+                  {puedeEliminar && (
+                    <td>
+                      <button
+                        className="pers-btn-revocar"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(p);
+                        }}
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

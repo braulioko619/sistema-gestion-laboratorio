@@ -11,6 +11,12 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
       comment: 'Código correlativo (AI-2026-001)',
     },
+    norma: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'ISO17025',
+      comment: 'ISO17025 | ISO17020 — norma bajo la cual se planifica esta auditoría',
+    },
     alcance: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -80,6 +86,11 @@ module.exports = (sequelize, DataTypes) => {
     InternalAudit.hasMany(models.AuditFinding, {
       foreignKey: 'audit_id',
       as: 'hallazgos',
+    });
+    InternalAudit.hasMany(models.AuditChecklistItem, {
+      foreignKey: 'audit_id',
+      as: 'checklist',
+      onDelete: 'CASCADE',
     });
   };
 

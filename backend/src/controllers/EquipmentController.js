@@ -43,6 +43,8 @@ exports.createEquipment = async (req, res) => {
       fecha_ingreso,
       observaciones,
       error_maximo_permitido,
+      categoria,
+      sede,
     } = req.body;
 
     if (!codigo || !nombre) {
@@ -83,6 +85,8 @@ exports.createEquipment = async (req, res) => {
       fecha_ingreso,
       observaciones,
       error_maximo_permitido: error_maximo_permitido ?? null,
+      categoria: categoria || 'patron_calibracion',
+      sede: sede || null,
       registrado_por: req.user.id,
     });
 
@@ -117,11 +121,13 @@ exports.createEquipment = async (req, res) => {
 // Listar equipos
 exports.getEquipment = async (req, res) => {
   try {
-    const { estado, search, page = 1, limit = 10 } = req.query;
+    const { estado, categoria, sede, search, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
     const where = {};
     if (estado) where.estado = estado;
+    if (categoria) where.categoria = categoria;
+    if (sede) where.sede = sede;
     if (search) {
       where[Op.or] = [
         { codigo: { [Op.iLike]: `%${search}%` } },
@@ -232,6 +238,8 @@ exports.updateEquipment = async (req, res) => {
       'fecha_ingreso',
       'observaciones',
       'error_maximo_permitido',
+      'categoria',
+      'sede',
     ];
 
     const cambiosAnteriores = {};
@@ -423,9 +431,14 @@ exports.getEquipmentAlerts = async (req, res) => {
     limite.setDate(limite.getDate() + dias);
     const fechaLimite = limite.toISOString().split('T')[0];
 
+    const where = {
+      estado: { [Op.notIn]: ['dado_de_baja'] },
+    };
+    if (req.query.categoria) where.categoria = req.query.categoria;
+
     const equipos = await Equipment.findAll({
       where: {
-        estado: { [Op.notIn]: ['dado_de_baja'] },
+        ...where,
         [Op.or]: [
           { proxima_calibracion: { [Op.lte]: fechaLimite } },
           { proximo_mantenimiento: { [Op.lte]: fechaLimite } },
@@ -490,7 +503,11 @@ exports.getEquipmentAlerts = async (req, res) => {
 exports.getStabilityAlerts = async (req, res) => {
   try {
     const alertas = await StabilityAlertService.listarAlertasActivas();
-    res.json({ success: true, data: alertas });
+    const { categoria } = req.query;
+    const filtradas = categoria
+      ? alertas.filter((a) => a.equipo?.categoria === categoria)
+      : alertas;
+    res.json({ success: true, data: filtradas });
   } catch (error) {
     logger.error(`[EQUIPMENT] Error obteniendo alertas de estabilidad: ${error.message}`);
     res.status(500).json({

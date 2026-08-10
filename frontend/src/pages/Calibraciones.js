@@ -11,6 +11,10 @@ import {
   usersAPI,
 } from '../services/api';
 import CotizacionesPanel from './CotizacionesPanel';
+import CalibracionesDashboard from './CalibracionesDashboard';
+import ServiceScheduler from './ServiceScheduler';
+import MuestrasPanel from './MuestrasPanel';
+import Equipment from './Equipment';
 import './Calibraciones.css';
 
 const ORDEN_ESTADOS = {
@@ -46,19 +50,6 @@ const FORM_CLIENTE_VACIO = {
   email_contacto: '',
 };
 
-const FORM_INSTRUMENTO_VACIO = {
-  codigo_interno: '',
-  codigo_cliente: '',
-  tipo_instrumento: '',
-  marca: '',
-  modelo: '',
-  numero_serie: '',
-  rango_medida: '',
-  resolucion: '',
-  unidad: '',
-  proxima_fecha_calibracion: '',
-};
-
 const FORM_ORDEN_VACIO = {
   cliente_id: '',
   fecha_ingreso: '',
@@ -82,7 +73,7 @@ function Calibraciones() {
   const puedeGestionar = ['administrador', 'jefe_laboratorio', 'supervisor', 'personal_calidad'].includes(rolActual);
   const puedeEmitirCertificado = ['administrador', 'jefe_laboratorio'].includes(rolActual);
 
-  const [tab, setTab] = useState('clientes');
+  const [tab, setTab] = useState('dashboard');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
@@ -102,8 +93,10 @@ function Calibraciones() {
   const [clienteSeleccionado, setClienteSeleccionado] = useState('');
   const [instrumentos, setInstrumentos] = useState([]);
   const [alertas, setAlertas] = useState(null);
-  const [showInstrumentoForm, setShowInstrumentoForm] = useState(false);
-  const [formInstrumento, setFormInstrumento] = useState(FORM_INSTRUMENTO_VACIO);
+  // Instrumento nuevo se registra siempre vía la recepción trazable de
+  // Muestras (número único, fecha/condición de recepción); esta pestaña sólo
+  // sugiere el cliente ya elegido aquí (ver irARegistrarMuestra).
+  const [muestraClientePrellenado, setMuestraClientePrellenado] = useState(null);
 
   // Órdenes de trabajo
   const [ordenes, setOrdenes] = useState([]);
@@ -244,21 +237,9 @@ function Calibraciones() {
     }
   };
 
-  const handleCreateInstrumento = async (e) => {
-    e.preventDefault();
-    if (!clienteSeleccionado) return;
-    try {
-      const payload = { ...formInstrumento };
-      Object.keys(payload).forEach((k) => { if (payload[k] === '') delete payload[k]; });
-      const res = await clientInstrumentsAPI.create(clienteSeleccionado, payload);
-      alert(res.data.message);
-      setFormInstrumento(FORM_INSTRUMENTO_VACIO);
-      setShowInstrumentoForm(false);
-      fetchInstrumentos(clienteSeleccionado);
-      fetchAlertas();
-    } catch (err) {
-      setError(err.response?.data?.error?.message || 'Error al registrar el instrumento');
-    }
+  const irARegistrarMuestra = () => {
+    setMuestraClientePrellenado(clienteSeleccionado || null);
+    setTab('muestras');
   };
 
   const toggleInstrumentoSeleccionado = (id) => {
@@ -647,11 +628,43 @@ function Calibraciones() {
       )}
 
       <div className="cal-tabs">
+        <button className={`cal-tab ${tab === 'dashboard' ? 'active' : ''}`} onClick={() => setTab('dashboard')}>📊 Dashboard</button>
         <button className={`cal-tab ${tab === 'clientes' ? 'active' : ''}`} onClick={() => setTab('clientes')}>Clientes</button>
         <button className={`cal-tab ${tab === 'instrumentos' ? 'active' : ''}`} onClick={() => setTab('instrumentos')}>Instrumentos</button>
+        <button className={`cal-tab ${tab === 'muestras' ? 'active' : ''}`} onClick={() => setTab('muestras')}>Muestras</button>
         <button className={`cal-tab ${tab === 'ordenes' ? 'active' : ''}`} onClick={() => setTab('ordenes')}>Órdenes de Trabajo</button>
         <button className={`cal-tab ${tab === 'cotizaciones' ? 'active' : ''}`} onClick={() => setTab('cotizaciones')}>Cotizaciones</button>
+        <button className={`cal-tab ${tab === 'calendarizacion' ? 'active' : ''}`} onClick={() => setTab('calendarizacion')}>📅 Calendarización</button>
+        <button className={`cal-tab ${tab === 'equipos' ? 'active' : ''}`} onClick={() => setTab('equipos')}>Equipos Patrones</button>
       </div>
+
+      {tab === 'dashboard' && (
+        <CalibracionesDashboard
+          onVerOrdenTrabajo={openOrdenDetail}
+          onVerCotizacion={verCotizacion}
+        />
+      )}
+
+      {tab === 'equipos' && <Equipment />}
+
+      {tab === 'calendarizacion' && (
+        <ServiceScheduler
+          users={users}
+          ordenes={ordenes}
+          puedeGestionar={puedeGestionar}
+        />
+      )}
+
+      {tab === 'muestras' && (
+        <MuestrasPanel
+          clientes={clientes}
+          users={users}
+          puedeGestionar={puedeGestionar}
+          onOrdenAsignada={fetchOrdenes}
+          onVerOrdenTrabajo={openOrdenDetail}
+          clienteInicial={muestraClientePrellenado}
+        />
+      )}
 
       {tab === 'clientes' && (
         <div>
@@ -768,63 +781,19 @@ function Calibraciones() {
             </select>
           </div>
 
-          {clienteSeleccionado && puedeGestionar && (
+          {puedeGestionar && (
             <div className="cal-actions">
-              <button onClick={() => setShowInstrumentoForm(!showInstrumentoForm)} className="btn-primary">
-                {showInstrumentoForm ? '✕ Cancelar' : '➕ Nuevo Instrumento'}
+              <button onClick={irARegistrarMuestra} className="btn-primary">
+                ➕ Registrar instrumento nuevo (vía Muestras)
               </button>
             </div>
           )}
 
-          {showInstrumentoForm && clienteSeleccionado && (
-            <div className="card cal-form">
-              <h2>Registrar Instrumento</h2>
-              <form onSubmit={handleCreateInstrumento}>
-                <div className="cal-form-grid">
-                  <div className="form-group">
-                    <label>Código interno: *</label>
-                    <input type="text" value={formInstrumento.codigo_interno} onChange={(e) => setFormInstrumento({ ...formInstrumento, codigo_interno: e.target.value })} placeholder="Ej: INS-001" required />
-                  </div>
-                  <div className="form-group">
-                    <label>Tipo de instrumento: *</label>
-                    <input type="text" value={formInstrumento.tipo_instrumento} onChange={(e) => setFormInstrumento({ ...formInstrumento, tipo_instrumento: e.target.value })} placeholder="Ej: Manómetro" required />
-                  </div>
-                  <div className="form-group">
-                    <label>Código del cliente:</label>
-                    <input type="text" value={formInstrumento.codigo_cliente} onChange={(e) => setFormInstrumento({ ...formInstrumento, codigo_cliente: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>Marca:</label>
-                    <input type="text" value={formInstrumento.marca} onChange={(e) => setFormInstrumento({ ...formInstrumento, marca: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>Modelo:</label>
-                    <input type="text" value={formInstrumento.modelo} onChange={(e) => setFormInstrumento({ ...formInstrumento, modelo: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>N° de serie:</label>
-                    <input type="text" value={formInstrumento.numero_serie} onChange={(e) => setFormInstrumento({ ...formInstrumento, numero_serie: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>Rango de medida:</label>
-                    <input type="text" value={formInstrumento.rango_medida} onChange={(e) => setFormInstrumento({ ...formInstrumento, rango_medida: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>Resolución:</label>
-                    <input type="text" value={formInstrumento.resolucion} onChange={(e) => setFormInstrumento({ ...formInstrumento, resolucion: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>Unidad:</label>
-                    <input type="text" value={formInstrumento.unidad} onChange={(e) => setFormInstrumento({ ...formInstrumento, unidad: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label>Próxima fecha de calibración:</label>
-                    <input type="date" value={formInstrumento.proxima_fecha_calibracion} onChange={(e) => setFormInstrumento({ ...formInstrumento, proxima_fecha_calibracion: e.target.value })} />
-                  </div>
-                </div>
-                <button type="submit" className="btn-primary">Registrar</button>
-              </form>
-            </div>
+          {clienteSeleccionado && instrumentos.length > 0 && (
+            <p className="cal-nota">
+              Este catálogo se alimenta de la recepción de muestras. Para registrar un instrumento nuevo,
+              usa "Registrar instrumento nuevo" — quedará con número de recepción trazable.
+            </p>
           )}
 
           {clienteSeleccionado && (

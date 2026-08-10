@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { internalAuditsAPI, usersAPI } from '../services/api';
+import { internalAuditsAPI, checklistTemplateAPI, usersAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './InternalAudits.css';
 
@@ -10,13 +10,31 @@ const ESTADOS = {
   cancelada: 'Cancelada',
 };
 
+const NORMAS = {
+  ISO17025: 'NCh ISO/IEC 17025:2017',
+  ISO17020: 'NCh-ISO 17020:2012',
+};
+
+const FUENTES = {
+  DA_D22: 'DA-D22',
+  DA_D23: 'DA-D23',
+};
+
 const TIPOS_HALLAZGO = {
   no_conformidad: 'No conformidad',
   observacion: 'Observación',
   oportunidad_mejora: 'Oportunidad de mejora',
 };
 
+const EVALUACIONES = [
+  { valor: 'C', etiqueta: 'C', titulo: 'Cumple' },
+  { valor: 'NC', etiqueta: 'NC', titulo: 'No cumple' },
+  { valor: 'OM', etiqueta: 'OM', titulo: 'Oportunidad de mejora' },
+  { valor: 'N/A', etiqueta: 'N/A', titulo: 'No aplica' },
+];
+
 const FORM_AUDIT_VACIO = {
+  norma: 'ISO17025',
   alcance: '',
   criterios: '',
   auditor_id: '',
@@ -30,6 +48,33 @@ const FORM_HALLAZGO_VACIO = {
   descripcion: '',
   clasificacion: 'menor',
 };
+
+const FORM_PLANTILLA_VACIO = { tipo: 'item', clausula: '', texto: '' };
+
+// Solo se muestra la etiqueta para directrices complementarias (DA-D22/DA-D23);
+// los puntos que vienen directo de la norma base no necesitan distinguirse.
+function fuenteEtiqueta(fuente) {
+  return FUENTES[fuente] || null;
+}
+
+// Agrupa la lista plana del checklist (ordenada) en secciones: cada 'titulo'
+// abre una sección y los 'item' siguientes quedan anidados hasta el próximo título.
+function agruparPorSeccion(puntos) {
+  const secciones = [];
+  let actual = null;
+  (puntos || []).forEach((p) => {
+    if (p.tipo === 'titulo') {
+      actual = { titulo: p, items: [] };
+      secciones.push(actual);
+    } else if (actual) {
+      actual.items.push(p);
+    } else {
+      actual = { titulo: null, items: [p] };
+      secciones.push(actual);
+    }
+  });
+  return secciones;
+}
 
 function InternalAudits() {
   const { user } = useAuth();
@@ -47,6 +92,16 @@ function InternalAudits() {
   const [formAudit, setFormAudit] = useState(FORM_AUDIT_VACIO);
   const [formHallazgo, setFormHallazgo] = useState(FORM_HALLAZGO_VACIO);
   const [formCierre, setFormCierre] = useState({ fecha_realizacion: '', conclusiones: '' });
+
+  const [vista, setVista] = useState('auditorias');
+  const [checklistDraft, setChecklistDraft] = useState([]);
+  const [checklistFiltro, setChecklistFiltro] = useState('');
+  const [guardandoChecklist, setGuardandoChecklist] = useState(false);
+
+  const [plantillaNorma, setPlantillaNorma] = useState('ISO17025');
+  const [plantilla, setPlantilla] = useState([]);
+  const [showPlantillaForm, setShowPlantillaForm] = useState(false);
+  const [formPlantilla, setFormPlantilla] = useState(FORM_PLANTILLA_VACIO);
 
   const puedeGestionar = ['administrador', 'jefe_laboratorio', 'personal_calidad'].includes(
     user?.rol
@@ -81,6 +136,19 @@ function InternalAudits() {
       .catch(() => setUsers([]));
   }, []);
 
+  const fetchPlantilla = useCallback(async () => {
+    try {
+      const res = await checklistTemplateAPI.list({ norma: plantillaNorma });
+      setPlantilla(res.data.data);
+    } catch (err) {
+      setError('Error al cargar la plantilla del checklist');
+    }
+  }, [plantillaNorma]);
+
+  useEffect(() => {
+    if (vista === 'plantilla') fetchPlantilla();
+  }, [vista, fetchPlantilla]);
+
   const limpiarPayload = (obj) => {
     const payload = { ...obj };
     Object.keys(payload).forEach((k) => {
@@ -107,6 +175,8 @@ function InternalAudits() {
     try {
       const res = await internalAuditsAPI.get(id);
       setSelected(res.data.data);
+      setChecklistDraft((res.data.data.checklist || []).slice().sort((a, b) => a.orden - b.orden));
+      setChecklistFiltro('');
       setShowFindingForm(false);
       setShowCloseForm(false);
       setFormHallazgo(FORM_HALLAZGO_VACIO);
@@ -117,6 +187,74 @@ function InternalAudits() {
     } catch (err) {
       setError('Error al cargar la auditoría');
       console.error(err);
+    }
+  };
+
+  const checklistBloqueado = selected && ['completada', 'cancelada'].includes(selected.estado);
+
+  const actualizarPuntoChecklist = (id, cambios) => {
+    setChecklistDraft((prev) => prev.map((p) => (p.id === id ? { ...p, ...cambios } : p)));
+  };
+
+  const toggleSeccionChecklist = (items, activo) => {
+    const ids = new Set(items.map((i) => i.id));
+    setChecklistDraft((prev) => prev.map((p) => (ids.has(p.id) ? { ...p, activo } : p)));
+  };
+
+  const toggleTodoElChecklist = (activo) => {
+    setChecklistDraft((prev) => prev.map((p) => (p.tipo === 'item' ? { ...p, activo } : p)));
+  };
+
+  const handleGuardarChecklist = async () => {
+    try {
+      setGuardandoChecklist(true);
+      const items = checklistDraft
+        .filter((p) => p.tipo === 'item')
+        .map((p) => ({ id: p.id, activo: p.activo, evaluacion: p.evaluacion, evidencia: p.evidencia || '' }));
+      const res = await internalAuditsAPI.updateChecklist(selected.id, { items });
+      setSelected(res.data.data);
+      setChecklistDraft((res.data.data.checklist || []).slice().sort((a, b) => a.orden - b.orden));
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Error al guardar el checklist');
+    } finally {
+      setGuardandoChecklist(false);
+    }
+  };
+
+  const handleDescargarPdf = async (id, codigo) => {
+    try {
+      const res = await internalAuditsAPI.downloadPdf(id);
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${codigo}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setError('Error al descargar el PDF');
+    }
+  };
+
+  const handleCreatePlantillaItem = async (e) => {
+    e.preventDefault();
+    try {
+      await checklistTemplateAPI.create({ ...formPlantilla, norma: plantillaNorma });
+      setFormPlantilla(FORM_PLANTILLA_VACIO);
+      setShowPlantillaForm(false);
+      fetchPlantilla();
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Error al agregar el punto a la plantilla');
+    }
+  };
+
+  const handleToggleVigenciaPlantilla = async (item) => {
+    try {
+      await checklistTemplateAPI.update(item.id, { vigente: !item.vigente });
+      fetchPlantilla();
+    } catch (err) {
+      setError('Error al actualizar el punto de la plantilla');
     }
   };
 
@@ -163,7 +301,7 @@ function InternalAudits() {
     <div className="ia-container">
       <div className="ia-header">
         <h1>Auditorías Internas</h1>
-        {puedeGestionar && (
+        {vista === 'auditorias' && puedeGestionar && (
           <button onClick={() => setShowForm(!showForm)} className="btn-primary">
             {showForm ? '✕ Cancelar' : '➕ Planificar auditoría'}
           </button>
@@ -176,6 +314,13 @@ function InternalAudits() {
         </div>
       )}
 
+      <div className="ia-tabs">
+        <button className={`ia-tab ${vista === 'auditorias' ? 'active' : ''}`} onClick={() => setVista('auditorias')}>Auditorías</button>
+        <button className={`ia-tab ${vista === 'plantilla' ? 'active' : ''}`} onClick={() => setVista('plantilla')}>Plantilla de Checklist</button>
+      </div>
+
+      {vista === 'auditorias' && (
+      <>
       {summary && (
         <div className="ia-summary">
           <div className="ia-summary-card">
@@ -208,6 +353,18 @@ function InternalAudits() {
           <h2>Planificar Auditoría Interna</h2>
           <form onSubmit={handleCreate}>
             <div className="form-group">
+              <label>Norma: *</label>
+              <select
+                value={formAudit.norma}
+                onChange={(e) => setFormAudit({ ...formAudit, norma: e.target.value })}
+                required
+              >
+                {Object.entries(NORMAS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
               <label>Alcance (áreas, procesos, cláusulas): *</label>
               <textarea
                 value={formAudit.alcance}
@@ -223,7 +380,7 @@ function InternalAudits() {
                 value={formAudit.criterios}
                 onChange={(e) => setFormAudit({ ...formAudit, criterios: e.target.value })}
                 rows="2"
-                placeholder="Ej: ISO/IEC 17025:2017, Manual de Calidad v3, POE-01"
+                placeholder="Ej: Manual de Calidad v3, POE-01"
               ></textarea>
             </div>
             <div className="ia-form-grid">
@@ -290,6 +447,7 @@ function InternalAudits() {
             <thead>
               <tr>
                 <th>Código</th>
+                <th>Norma</th>
                 <th>Alcance</th>
                 <th>Auditor</th>
                 <th>Planificada</th>
@@ -302,6 +460,7 @@ function InternalAudits() {
               {audits.map((a) => (
                 <tr key={a.id} onClick={() => openDetail(a.id)} className="ia-row">
                   <td><strong>{a.codigo}</strong></td>
+                  <td><span className="badge badge-ia-norma">{NORMAS[a.norma] || a.norma}</span></td>
                   <td className="ia-alcance">{a.alcance}</td>
                   <td>{a.auditor?.nombre || a.auditor_externo || '—'}</td>
                   <td>{a.fecha_planificada}</td>
@@ -319,12 +478,88 @@ function InternalAudits() {
           </table>
         </div>
       )}
+      </>
+      )}
+
+      {vista === 'plantilla' && (
+        <div>
+          <p className="ia-nota">
+            Estos son los puntos normativos que se copian automáticamente al checklist de cada nueva
+            auditoría. Desactivar un punto aquí no afecta auditorías ya creadas.
+          </p>
+          <div className="ia-tabs ia-subtabs">
+            {Object.entries(NORMAS).map(([k, v]) => (
+              <button
+                key={k}
+                className={`ia-tab ${plantillaNorma === k ? 'active' : ''}`}
+                onClick={() => setPlantillaNorma(k)}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+          {puedeGestionar && (
+            <div className="ia-actions">
+              <button className="btn-primary" onClick={() => setShowPlantillaForm(!showPlantillaForm)}>
+                {showPlantillaForm ? '✕ Cancelar' : '➕ Agregar punto'}
+              </button>
+            </div>
+          )}
+
+          {showPlantillaForm && (
+            <div className="card ia-form">
+              <h2>Agregar punto a la plantilla</h2>
+              <form onSubmit={handleCreatePlantillaItem}>
+                <div className="ia-form-grid">
+                  <div className="form-group">
+                    <label>Tipo:</label>
+                    <select value={formPlantilla.tipo} onChange={(e) => setFormPlantilla({ ...formPlantilla, tipo: e.target.value })}>
+                      <option value="item">Punto evaluable</option>
+                      <option value="titulo">Encabezado de sección</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Cláusula:</label>
+                    <input type="text" value={formPlantilla.clausula} onChange={(e) => setFormPlantilla({ ...formPlantilla, clausula: e.target.value })} placeholder="Ej: 6.4.9" />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Texto: *</label>
+                  <textarea value={formPlantilla.texto} onChange={(e) => setFormPlantilla({ ...formPlantilla, texto: e.target.value })} rows="3" required></textarea>
+                </div>
+                <button type="submit" className="btn-primary">Agregar</button>
+              </form>
+            </div>
+          )}
+
+          {plantilla.length === 0 ? (
+            <p>No hay puntos cargados en la plantilla</p>
+          ) : (
+            <div className="ia-plantilla-list">
+              {plantilla.map((p) => (
+                <div key={p.id} className={`ia-plantilla-row ${p.tipo === 'titulo' ? 'ia-plantilla-titulo' : ''} ${!p.vigente ? 'ia-plantilla-inactiva' : ''}`}>
+                  <span className="ia-plantilla-clausula">
+                    {p.clausula || (p.tipo === 'titulo' ? '§' : '—')}
+                    {fuenteEtiqueta(p.fuente) && <em className="ia-fuente-tag">{fuenteEtiqueta(p.fuente)}</em>}
+                  </span>
+                  <span className="ia-plantilla-texto">{p.texto}</span>
+                  {puedeGestionar && (
+                    <button className="btn-secondary" onClick={() => handleToggleVigenciaPlantilla(p)}>
+                      {p.vigente ? 'Desactivar' : 'Reactivar'}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {selected && (
         <div className="ia-modal-overlay" onClick={() => setSelected(null)}>
           <div className="ia-modal card" onClick={(e) => e.stopPropagation()}>
             <div className="ia-modal-header">
-              <h2>{selected.codigo}</h2>
+              <h2>{selected.codigo} <span className="badge badge-ia-norma">{NORMAS[selected.norma] || selected.norma}</span></h2>
               <button className="ia-close" onClick={() => setSelected(null)}>✕</button>
             </div>
 
@@ -343,6 +578,135 @@ function InternalAudits() {
               <p className="ia-conclusiones">
                 <strong>Conclusiones:</strong> {selected.conclusiones}
               </p>
+            )}
+
+            <div className="ia-actions">
+              <button className="btn-secondary" onClick={() => handleDescargarPdf(selected.id, selected.codigo)}>
+                📄 Descargar informe (PDF)
+              </button>
+            </div>
+
+            <div className="ia-section-header">
+              <h3>Checklist normativo ({NORMAS[selected.norma] || selected.norma})</h3>
+            </div>
+
+            {checklistBloqueado && (
+              <p className="ia-nota">Auditoría {selected.estado === 'completada' ? 'completada' : 'cancelada'}: el checklist queda de solo lectura.</p>
+            )}
+
+            {checklistDraft.length === 0 ? (
+              <p>Esta auditoría no tiene checklist asociado.</p>
+            ) : (
+              <>
+                <div className="ia-checklist-toolbar">
+                  <input
+                    type="text"
+                    placeholder="Filtrar por cláusula o texto..."
+                    value={checklistFiltro}
+                    onChange={(e) => setChecklistFiltro(e.target.value)}
+                  />
+                  <span className="ia-checklist-progreso">
+                    {checklistDraft.filter((p) => p.tipo === 'item' && p.activo).length} activos de{' '}
+                    {checklistDraft.filter((p) => p.tipo === 'item').length} ·{' '}
+                    {checklistDraft.filter((p) => p.tipo === 'item' && p.activo && p.evaluacion).length} evaluados
+                  </span>
+                  {!checklistBloqueado && (
+                    <div className="ia-checklist-bulk">
+                      <button type="button" className="ia-link-btn" onClick={() => toggleTodoElChecklist(true)}>Activar todos</button>
+                      <button type="button" className="ia-link-btn" onClick={() => toggleTodoElChecklist(false)}>Desactivar todos</button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="ia-checklist-list">
+                  {agruparPorSeccion(checklistDraft).map((seccion, si) => {
+                    const filtro = checklistFiltro.trim().toLowerCase();
+                    const itemsFiltrados = filtro
+                      ? seccion.items.filter(
+                          (it) =>
+                            it.texto.toLowerCase().includes(filtro) ||
+                            (it.clausula || '').toLowerCase().includes(filtro)
+                        )
+                      : seccion.items;
+                    const tituloCoincide = seccion.titulo && seccion.titulo.texto.toLowerCase().includes(filtro);
+                    if (filtro && itemsFiltrados.length === 0 && !tituloCoincide) return null;
+
+                    return (
+                      <div key={seccion.titulo?.id || `s-${si}`} className="ia-checklist-seccion">
+                        {seccion.titulo && (
+                          <div className="ia-checklist-titulo">
+                            <span>{seccion.titulo.texto}</span>
+                            {!checklistBloqueado && (
+                              <span className="ia-checklist-seccion-bulk">
+                                <button type="button" className="ia-link-btn" onClick={() => toggleSeccionChecklist(seccion.items, true)}>Todos</button>
+                                <button type="button" className="ia-link-btn" onClick={() => toggleSeccionChecklist(seccion.items, false)}>Ninguno</button>
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {(filtro ? itemsFiltrados : seccion.items).map((item) => (
+                          <div key={item.id} className={`ia-checklist-item ${!item.activo ? 'ia-checklist-item-inactivo' : ''}`}>
+                            <label className="ia-checklist-activo">
+                              <input
+                                type="checkbox"
+                                checked={!!item.activo}
+                                disabled={checklistBloqueado}
+                                onChange={(e) => actualizarPuntoChecklist(item.id, { activo: e.target.checked })}
+                              />
+                              Aplica
+                            </label>
+                            <div className="ia-checklist-texto">
+                              {(item.clausula || fuenteEtiqueta(item.fuente)) && (
+                                <span>
+                                  {item.clausula && <span className="ia-checklist-clausula">{item.clausula}</span>}
+                                  {fuenteEtiqueta(item.fuente) && <em className="ia-fuente-tag">{fuenteEtiqueta(item.fuente)}</em>}
+                                </span>
+                              )}
+                              <span>{item.texto}</span>
+                              {item.activo && (
+                                <input
+                                  type="text"
+                                  className="ia-checklist-evidencia"
+                                  placeholder="Evidencia / observación..."
+                                  value={item.evidencia || ''}
+                                  disabled={checklistBloqueado}
+                                  onChange={(e) => actualizarPuntoChecklist(item.id, { evidencia: e.target.value })}
+                                />
+                              )}
+                            </div>
+                            <div className="ia-checklist-eval">
+                              {EVALUACIONES.map((ev) => (
+                                <button
+                                  type="button"
+                                  key={ev.valor}
+                                  title={ev.titulo}
+                                  disabled={!item.activo || checklistBloqueado}
+                                  className={`ia-eval-btn ia-eval-${ev.valor.replace('/', '')} ${item.evaluacion === ev.valor ? 'active' : ''}`}
+                                  onClick={() =>
+                                    actualizarPuntoChecklist(item.id, {
+                                      evaluacion: item.evaluacion === ev.valor ? null : ev.valor,
+                                    })
+                                  }
+                                >
+                                  {ev.etiqueta}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {!checklistBloqueado && puedeGestionar && (
+                  <div className="ia-actions">
+                    <button className="btn-primary" onClick={handleGuardarChecklist} disabled={guardandoChecklist}>
+                      {guardandoChecklist ? 'Guardando...' : '💾 Guardar checklist'}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="ia-section-header">

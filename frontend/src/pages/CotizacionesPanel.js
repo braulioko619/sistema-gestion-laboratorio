@@ -24,9 +24,35 @@ const ITEM_VACIO = {
   tipo_instrumento: '',
   protocolo: '',
   cantidad: 1,
-  precio_unitario: '',
+  modalidad: 'laboratorio',
+  precio_base: '',
+  distancia_km: 0,
+  tarifa_km: 0,
+  valor_traslado: 0,
+  tiempo_traslado_horas: 0,
+  tarifa_hora_traslado: 0,
+  horas_hombre: 0,
+  tarifa_hora_hombre: 0,
   acreditado: false,
 };
+
+// Calcula el desglose y el precio unitario final de un ítem. En terreno, el
+// precio unitario suma la tarifa base más el costo de traslado (valor fijo +
+// tiempo de traslado por su tarifa horaria) y las horas hombre en terreno.
+function calcularDesgloseItem(item) {
+  const precioBase = Number(item.precio_base) || 0;
+  const valorTraslado = Number(item.valor_traslado) || 0;
+  const tiempoTrasladoHoras = Number(item.tiempo_traslado_horas) || 0;
+  const tarifaHoraTraslado = Number(item.tarifa_hora_traslado) || 0;
+  const horasHombre = Number(item.horas_hombre) || 0;
+  const tarifaHoraHombre = Number(item.tarifa_hora_hombre) || 0;
+
+  const costoTraslado = valorTraslado + tiempoTrasladoHoras * tarifaHoraTraslado;
+  const costoManoObra = horasHombre * tarifaHoraHombre;
+  const precioUnitario = item.modalidad === 'terreno' ? precioBase + costoTraslado + costoManoObra : precioBase;
+
+  return { costoTraslado, costoManoObra, precioUnitario };
+}
 
 const FORM_COTIZACION_VACIO = {
   cliente_id: '',
@@ -41,6 +67,10 @@ const FORM_TARIFA_VACIO = { tipo_instrumento: '', protocolo: '', rango_aplicable
 
 function money(value, moneda) {
   return `${moneda || 'CLP'} ${Number(value || 0).toLocaleString('es-CL')}`;
+}
+
+function round2Local(n) {
+  return Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 }
 
 // Este panel se integra como pestaña dentro de Calibraciones.js, que además
@@ -131,7 +161,18 @@ function CotizacionesPanel({
   };
 
   const handleItemChange = (idx, campo, valor) => {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [campo]: valor } : it)));
+    setItems((prev) => prev.map((it, i) => {
+      if (i !== idx) return it;
+      const actualizado = { ...it, [campo]: valor };
+      // El valor de traslado se re-estima automáticamente al cambiar la distancia
+      // o la tarifa por km; el usuario aún puede sobrescribirlo editándolo directamente.
+      if (campo === 'distancia_km' || campo === 'tarifa_km') {
+        const distancia = Number(campo === 'distancia_km' ? valor : it.distancia_km) || 0;
+        const tarifaKm = Number(campo === 'tarifa_km' ? valor : it.tarifa_km) || 0;
+        actualizado.valor_traslado = round2Local(distancia * tarifaKm);
+      }
+      return actualizado;
+    }));
   };
 
   const handleTarifaSeleccionada = (idx, tarifaId) => {
@@ -144,7 +185,7 @@ function CotizacionesPanel({
         tarifa_id: tarifaId,
         tipo_instrumento: tarifa.tipo_instrumento,
         protocolo: tarifa.protocolo,
-        precio_unitario: tarifa.precio,
+        precio_base: tarifa.precio,
         descripcion: it.descripcion || tarifa.tipo_instrumento,
       };
     }));
@@ -163,7 +204,7 @@ function CotizacionesPanel({
         descripcion: `${inst.tipo_instrumento} ${inst.marca || ''} ${inst.modelo || ''}`.trim(),
         tarifa_id: tarifaSugerida ? tarifaSugerida.id : it.tarifa_id,
         protocolo: tarifaSugerida ? tarifaSugerida.protocolo : it.protocolo,
-        precio_unitario: tarifaSugerida ? tarifaSugerida.precio : it.precio_unitario,
+        precio_base: tarifaSugerida ? tarifaSugerida.precio : it.precio_base,
       };
     }));
   };
@@ -172,7 +213,7 @@ function CotizacionesPanel({
   const removeItem = (idx) => setItems((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
 
   const totalesPreview = () => {
-    const subtotal = items.reduce((sum, it) => sum + (Number(it.cantidad) || 0) * (Number(it.precio_unitario) || 0), 0);
+    const subtotal = items.reduce((sum, it) => sum + (Number(it.cantidad) || 0) * calcularDesgloseItem(it).precioUnitario, 0);
     const descuentoMonto = (subtotal * (Number(formCotizacion.descuento_porcentaje) || 0)) / 100;
     const base = subtotal - descuentoMonto;
     const ivaMonto = (base * (Number(formCotizacion.iva_porcentaje) || 0)) / 100;
@@ -232,7 +273,15 @@ function CotizacionesPanel({
       tipo_instrumento: it.tipo_instrumento,
       protocolo: it.protocolo,
       cantidad: it.cantidad,
-      precio_unitario: it.precio_unitario,
+      modalidad: it.modalidad || 'laboratorio',
+      precio_base: it.precio_base !== undefined && it.precio_base !== null ? it.precio_base : it.precio_unitario,
+      distancia_km: it.distancia_km || 0,
+      tarifa_km: it.tarifa_km || 0,
+      valor_traslado: it.valor_traslado || 0,
+      tiempo_traslado_horas: it.tiempo_traslado_horas || 0,
+      tarifa_hora_traslado: it.tarifa_hora_traslado || 0,
+      horas_hombre: it.horas_hombre || 0,
+      tarifa_hora_hombre: it.tarifa_hora_hombre || 0,
       acreditado: !!it.acreditado,
     })));
     cargarInstrumentosDeCliente(cot.cliente_id);
@@ -399,8 +448,15 @@ function CotizacionesPanel({
                       <input type="number" min="1" value={item.cantidad} onChange={(e) => handleItemChange(idx, 'cantidad', e.target.value)} required />
                     </div>
                     <div className="form-group">
-                      <label>Precio unitario *</label>
-                      <input type="number" min="0" step="0.01" value={item.precio_unitario} onChange={(e) => handleItemChange(idx, 'precio_unitario', e.target.value)} required />
+                      <label>Precio base (tarifa) *</label>
+                      <input type="number" min="0" step="0.01" value={item.precio_base} onChange={(e) => handleItemChange(idx, 'precio_base', e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label>Modalidad *</label>
+                      <select value={item.modalidad} onChange={(e) => handleItemChange(idx, 'modalidad', e.target.value)}>
+                        <option value="laboratorio">Laboratorio</option>
+                        <option value="terreno">Terreno</option>
+                      </select>
                     </div>
                     <div className="form-group">
                       <label className="cal-checkbox">
@@ -412,8 +468,55 @@ function CotizacionesPanel({
                         Acreditado
                       </label>
                     </div>
+
+                    {item.modalidad === 'terreno' && (
+                      <div className="cot-item-terreno">
+                        <div className="form-group">
+                          <label>Distancia (km, ida y vuelta)</label>
+                          <input type="number" min="0" step="0.1" value={item.distancia_km} onChange={(e) => handleItemChange(idx, 'distancia_km', e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                          <label>Tarifa por km</label>
+                          <input type="number" min="0" step="0.01" value={item.tarifa_km} onChange={(e) => handleItemChange(idx, 'tarifa_km', e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                          <label>Valor de traslado (estimado, editable)</label>
+                          <input type="number" min="0" step="0.01" value={item.valor_traslado} onChange={(e) => handleItemChange(idx, 'valor_traslado', e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                          <label>Tiempo de traslado (horas)</label>
+                          <input type="number" min="0" step="0.1" value={item.tiempo_traslado_horas} onChange={(e) => handleItemChange(idx, 'tiempo_traslado_horas', e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                          <label>Tarifa por hora de traslado</label>
+                          <input type="number" min="0" step="0.01" value={item.tarifa_hora_traslado} onChange={(e) => handleItemChange(idx, 'tarifa_hora_traslado', e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                          <label>Horas hombre en terreno</label>
+                          <input type="number" min="0" step="0.1" value={item.horas_hombre} onChange={(e) => handleItemChange(idx, 'horas_hombre', e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                          <label>Tarifa por hora hombre</label>
+                          <input type="number" min="0" step="0.01" value={item.tarifa_hora_hombre} onChange={(e) => handleItemChange(idx, 'tarifa_hora_hombre', e.target.value)} />
+                        </div>
+                        <div className="cot-item-desglose">
+                          {(() => {
+                            const d = calcularDesgloseItem(item);
+                            return (
+                              <>
+                                <span>Base: {money(item.precio_base)}</span>
+                                <span>+ Traslado: {money(d.costoTraslado)}</span>
+                                <span>+ Mano de obra: {money(d.costoManoObra)}</span>
+                                <span><strong>= P. unitario: {money(d.precioUnitario)}</strong></span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="cot-item-subtotal">
-                      {money((Number(item.cantidad) || 0) * (Number(item.precio_unitario) || 0))}
+                      {money((Number(item.cantidad) || 0) * calcularDesgloseItem(item).precioUnitario)}
                     </div>
                     {items.length > 1 && (
                       <button type="button" className="cal-link-btn" onClick={() => removeItem(idx)}>Quitar</button>
@@ -607,6 +710,7 @@ function CotizacionesPanel({
                   <tr>
                     <th>Descripción</th>
                     <th>Protocolo</th>
+                    <th>Modalidad</th>
                     <th>Acreditado</th>
                     <th>Cant.</th>
                     <th>P. unitario</th>
@@ -616,8 +720,22 @@ function CotizacionesPanel({
                 <tbody>
                   {(detalle.items || []).map((it) => (
                     <tr key={it.id}>
-                      <td>{it.descripcion}</td>
+                      <td>
+                        {it.descripcion}
+                        {it.modalidad === 'terreno' && (
+                          <div className="cot-item-desglose-detalle">
+                            Base: {money(it.precio_base, detalle.moneda)}
+                            {' + Traslado: '}{money((Number(it.valor_traslado) || 0) + (Number(it.tiempo_traslado_horas) || 0) * (Number(it.tarifa_hora_traslado) || 0), detalle.moneda)}
+                            {' + M. de obra: '}{money((Number(it.horas_hombre) || 0) * (Number(it.tarifa_hora_hombre) || 0), detalle.moneda)}
+                          </div>
+                        )}
+                      </td>
                       <td>{it.protocolo}</td>
+                      <td>
+                        <span className={`badge ${it.modalidad === 'terreno' ? 'badge-cal-activo' : 'badge-cal-inactivo'}`}>
+                          {it.modalidad === 'terreno' ? 'Terreno' : 'Laboratorio'}
+                        </span>
+                      </td>
                       <td>
                         <span className={`badge ${it.acreditado ? 'badge-cal-activo' : 'badge-cal-inactivo'}`}>
                           {it.acreditado ? 'Sí' : 'No'}

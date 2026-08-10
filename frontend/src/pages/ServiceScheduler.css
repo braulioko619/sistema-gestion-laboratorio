@@ -1,0 +1,184 @@
+.sched-container {
+  padding: 8px 0 20px;
+}
+
+.sched-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sched-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sched-filtros {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sched-filtros select {
+  padding: 6px 8px;
+}
+
+.sched-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+  color: #566573;
+}
+
+.sched-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sched-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.sched-grid-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.sched-grid {
+  display: grid;
+  min-width: 900px;
+}
+
+.sched-corner {
+  border-bottom: 1px solid #e0e0e0;
+  background: var(--light-bg, #f2f7f6);
+}
+
+.sched-day-header {
+  text-align: center;
+  padding: 8px 4px;
+  background: var(--light-bg, #f2f7f6);
+  border-bottom: 1px solid #e0e0e0;
+  border-left: 1px solid #e8e8e8;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.sched-day-fecha {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: #566573;
+}
+
+.sched-link-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color, #00857d);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 2px 0 0;
+  text-decoration: underline;
+}
+
+.sched-hours-col {
+  position: relative;
+  border-right: 1px solid #e8e8e8;
+}
+
+.sched-hour-label {
+  box-sizing: border-box;
+  border-top: 1px solid #f0f0f0;
+  padding: 2px 6px 0 0;
+  font-size: 0.72rem;
+  color: #7f8c8d;
+  text-align: right;
+}
+
+.sched-day-body {
+  position: relative;
+  border-left: 1px solid #e8e8e8;
+}
+
+.sched-hour-line {
+  box-sizing: border-box;
+  border-top: 1px solid #f5f5f5;
+}
+
+.sched-visit {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-left: 4px solid #00857d;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 0.72rem;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.sched-visit:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+.sched-visit-cancelada {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.sched-visit-desc {
+  color: #566573;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* Modal (reutiliza estilos de cal-modal donde aplica) */
+.sched-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.sched-modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.sched-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sched-badge-programada { background: var(--secondary-light); color: var(--secondary-dark); }
+.sched-badge-confirmada { background: #eafaf1; color: #1e8449; }
+.sched-badge-en_curso { background: #fef5e7; color: #b9770e; }
+.sched-badge-completada { background: #eafaf1; color: #1e8449; }
+.sched-badge-cancelada { background: #f2f3f4; color: #566573; }

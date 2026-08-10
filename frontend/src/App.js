@@ -9,11 +9,11 @@ import Home from './pages/Home';
 import Documents from './pages/Documents';
 import Quality from './pages/Quality';
 import NonConformities from './pages/NonConformities';
-import Equipment from './pages/Equipment';
 import Personnel from './pages/Personnel';
 import InternalAudits from './pages/InternalAudits';
 import Audit from './pages/Audit';
 import Calibraciones from './pages/Calibraciones';
+import ControlMetrologico from './pages/ControlMetrologico';
 import './index.css';
 
 function App() {
@@ -54,11 +54,11 @@ function App() {
               <Route path="/documents" element={<Documents />} />
               <Route path="/quality" element={<Quality />} />
               <Route path="/nonconformities" element={<NonConformities />} />
-              <Route path="/equipment" element={<Equipment />} />
               <Route path="/personnel" element={<Personnel />} />
               <Route path="/internal-audits" element={<InternalAudits />} />
               <Route path="/audit" element={<Audit />} />
               <Route path="/calibraciones" element={<Calibraciones />} />
+              <Route path="/control-metrologico" element={<ControlMetrologico />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </div>

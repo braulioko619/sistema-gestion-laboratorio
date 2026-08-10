@@ -241,6 +241,22 @@
   color: #c0392b;
 }
 
+/* Badges de estado de muestra */
+.badge-muestra-pendiente {
+  background: #eaf2fd;
+  color: #2471a3;
+}
+
+.badge-muestra-asignada {
+  background: #eafaf1;
+  color: #1e8449;
+}
+
+.badge-muestra-rechazada {
+  background: #fdecea;
+  color: #c0392b;
+}
+
 /* Badges de estado de ítem de orden */
 .badge-item-pendiente {
   background: #eaf2fd;
@@ -392,6 +408,21 @@
   flex-wrap: wrap;
 }
 
+.cal-nota {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.cal-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 16px;
+  padding-top: 12px;
+}
+
 .cal-link-btn {
   background: none;
   border: none;
@@ -456,6 +487,35 @@
   font-weight: 700;
   color: var(--primary-color, #00857d);
   align-self: center;
+}
+
+.cot-item-terreno {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 12px;
+  align-items: end;
+  padding: 10px;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px dashed var(--border-color, #d5e4e1);
+  border-radius: 6px;
+}
+
+.cot-item-desglose {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 0.85em;
+  color: #566573;
+  margin-top: 4px;
+}
+
+.cot-item-desglose-detalle {
+  font-size: 0.82em;
+  color: #566573;
+  margin-top: 2px;
 }
 
 .cot-totales-preview {

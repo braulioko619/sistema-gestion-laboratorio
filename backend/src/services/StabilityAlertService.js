@@ -204,7 +204,7 @@ async function generarAlertasDiarias() {
 async function listarAlertasActivas() {
   return StabilityAlert.findAll({
     where: { resuelta_en: null },
-    include: [{ model: Equipment, as: 'equipo', attributes: ['id', 'codigo', 'nombre'] }],
+    include: [{ model: Equipment, as: 'equipo', attributes: ['id', 'codigo', 'nombre', 'categoria'] }],
     order: [['tipo', 'ASC'], ['ultima_deteccion', 'DESC']],
   });
 }

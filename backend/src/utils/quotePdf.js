@@ -51,13 +51,14 @@ function buildQuotePdf(cotizacion, res) {
 
   // Tabla de ítems
   y += 15;
-  const cols = { desc: 50, protocolo: 200, acred: 305, cant: 345, precio: 390, subtotal: 465 };
+  const cols = { desc: 50, protocolo: 190, modalidad: 260, acred: 315, cant: 350, precio: 390, subtotal: 465 };
   const tableRight = 545;
 
   doc.rect(50, y, tableRight - 50, 20).fill('#00857d');
   doc.fillColor('#fff').fontSize(9);
   doc.text('Descripción', cols.desc + 4, y + 6, { width: cols.protocolo - cols.desc - 8 });
-  doc.text('Protocolo', cols.protocolo + 4, y + 6, { width: cols.acred - cols.protocolo - 8 });
+  doc.text('Protocolo', cols.protocolo + 4, y + 6, { width: cols.modalidad - cols.protocolo - 8 });
+  doc.text('Modalidad', cols.modalidad + 4, y + 6, { width: cols.acred - cols.modalidad - 8 });
   doc.text('Acred.', cols.acred + 4, y + 6, { width: cols.cant - cols.acred - 8 });
   doc.text('Cant.', cols.cant + 4, y + 6, { width: cols.precio - cols.cant - 8 });
   doc.text('P. Unit.', cols.precio + 4, y + 6, { width: cols.subtotal - cols.precio - 8 });
@@ -65,21 +66,34 @@ function buildQuotePdf(cotizacion, res) {
   y += 20;
 
   (cotizacion.items || []).forEach((item, idx) => {
-    if (y > 700) {
+    if (y > 680) {
       doc.addPage();
       y = 50;
     }
-    const rowHeight = 20;
+    const esTerreno = item.modalidad === 'terreno';
+    const rowHeight = esTerreno ? 32 : 20;
     if (idx % 2 === 1) {
       doc.rect(50, y, tableRight - 50, rowHeight).fill('#f2f7f6');
     }
     doc.fillColor('#000').fontSize(8.5);
     doc.text(item.descripcion, cols.desc + 4, y + 6, { width: cols.protocolo - cols.desc - 8 });
-    doc.text(item.protocolo, cols.protocolo + 4, y + 6, { width: cols.acred - cols.protocolo - 8 });
+    doc.text(item.protocolo, cols.protocolo + 4, y + 6, { width: cols.modalidad - cols.protocolo - 8 });
+    doc.text(esTerreno ? 'Terreno' : 'Laboratorio', cols.modalidad + 4, y + 6, { width: cols.acred - cols.modalidad - 8 });
     doc.text(item.acreditado ? 'Sí' : 'No', cols.acred + 4, y + 6, { width: cols.cant - cols.acred - 8 });
     doc.text(String(item.cantidad), cols.cant + 4, y + 6, { width: cols.precio - cols.cant - 8 });
     doc.text(formatMoney(item.precio_unitario, cotizacion.moneda), cols.precio + 4, y + 6, { width: cols.subtotal - cols.precio - 8 });
     doc.text(formatMoney(item.subtotal, cotizacion.moneda), cols.subtotal + 4, y + 6, { width: tableRight - cols.subtotal - 4 });
+
+    if (esTerreno) {
+      const costoTraslado = Number(item.valor_traslado || 0) + Number(item.tiempo_traslado_horas || 0) * Number(item.tarifa_hora_traslado || 0);
+      const costoManoObra = Number(item.horas_hombre || 0) * Number(item.tarifa_hora_hombre || 0);
+      doc.fillColor('#666').fontSize(7);
+      doc.text(
+        `Base: ${formatMoney(item.precio_base, cotizacion.moneda)}  +  Traslado: ${formatMoney(costoTraslado, cotizacion.moneda)}  +  Mano de obra: ${formatMoney(costoManoObra, cotizacion.moneda)}`,
+        cols.desc + 4, y + 20, { width: tableRight - cols.desc - 8 }
+      );
+    }
+
     y += rowHeight;
   });
 

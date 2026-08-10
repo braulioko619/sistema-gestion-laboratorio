@@ -1,0 +1,115 @@
+.dash-container {
+  padding: 8px 0 20px;
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.dash-card h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.dash-stat-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dash-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--light-bg, #f2f7f6);
+  border-radius: 7px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.dash-stat span:last-child {
+  font-size: 0.72rem;
+  color: #566573;
+}
+
+.dash-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--primary-color, #00857d);
+}
+
+.dash-stat-danger .dash-value {
+  color: #c0392b;
+}
+
+.dash-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dash-mini-table td {
+  padding: 6px 4px;
+  font-size: 0.85rem;
+  border-top: 1px solid #eee;
+}
+
+.dash-row {
+  cursor: pointer;
+}
+
+.dash-row:hover {
+  background: var(--light-bg, #f2f7f6);
+}
+
+.dash-vacio {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.dash-full {
+  width: 100%;
+}
+
+.dash-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-funnel-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-funnel-label {
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.dash-funnel-bar-track {
+  background: #eef2f2;
+  border-radius: 4px;
+  height: 18px;
+  overflow: hidden;
+}
+
+.dash-funnel-bar {
+  background: var(--primary-color, #00857d);
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.dash-funnel-value {
+  font-weight: 700;
+  text-align: right;
+  font-size: 0.85rem;
+}

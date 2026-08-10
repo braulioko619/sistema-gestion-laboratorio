@@ -1,5 +1,14 @@
 require('dotenv').config();
 
+// DB_POOL_MAX ya estaba documentada en .env.example pero ningún environment
+// la leía, así que el pool corría siempre con el default de Sequelize (max: 5).
+const pool = {
+  max: parseInt(process.env.DB_POOL_MAX, 10) || 5,
+  min: 0,
+  acquire: 30000,
+  idle: 10000,
+};
+
 module.exports = {
   development: {
     username: process.env.DB_USER || 'postgres',
@@ -9,6 +18,7 @@ module.exports = {
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
     logging: false,
+    pool,
   },
   test: {
     username: process.env.DB_USER || 'postgres',
@@ -18,6 +28,7 @@ module.exports = {
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
     logging: false,
+    pool,
   },
   production: {
     username: process.env.DB_USER,
@@ -27,6 +38,7 @@ module.exports = {
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
     logging: false,
+    pool,
     dialectOptions: {
       ssl:
         process.env.DB_SSL === 'true'
