@@ -22,13 +22,13 @@ start "Frontend - Laboratorio" cmd /k "%PROYECTO%\start-frontend.bat"
 
 echo.
 echo =====================================================
-echo   Espera ~60 segundos. El frontend dira:
-echo   "Compiled successfully!"
-echo   Luego abre: http://localhost:3000
+echo   El navegador se abre solo cuando el frontend
+echo   termina de compilar ("Compiled successfully!").
+echo   Si no se abriera, entra a: http://localhost:3000
 echo.
 echo   Usuario: admin@laboratorio.com
 echo   Contrasena: Admin@123
 echo =====================================================
 echo.
-timeout /t 70 /nobreak > nul
-start http://localhost:3000
+echo   Puedes cerrar esta ventana.
+pause > nul
