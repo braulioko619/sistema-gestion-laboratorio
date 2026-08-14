@@ -140,10 +140,16 @@ SEED_PASSWORD='<contraseña de arranque>' npx sequelize-cli db:seed:all
 
 Existe además el rol `usuario_lectura`.
 
-> **Cambia estas contraseñas desde la aplicación después del primer ingreso.**
-> Todas las cuentas nacen con la misma clave, y mientras la compartan no hay
-> forma de atribuir con certeza a una persona lo que queda en la bitácora de
-> auditoría: firmas de certificados, emisiones y cambios de estado.
+> **Pendiente conocido: el sistema todavía no permite cambiar contraseñas.**
+> No hay endpoint de cambio de clave y `PUT /api/users/:id` excluye el campo
+> `password` a propósito. Hoy la única vía es volver a sembrar o actualizar el
+> hash directamente en la base de datos.
+>
+> Esto importa más allá de la comodidad: todas las cuentas de arranque nacen con
+> la misma clave, y mientras la compartan no hay forma de atribuir con certeza a
+> una persona lo que queda en la bitácora de auditoría — firmas de certificados,
+> emisiones y cambios de estado. Cerrar esta brecha es requisito para operar en
+> serio bajo ISO/IEC 17025.
 
 ### Tests
 
