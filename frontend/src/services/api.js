@@ -221,6 +221,8 @@ export const samplesAPI = {
 
 // CERTIFICADOS DE CALIBRACIÓN (Laboratorio de Calibraciones)
 export const certificatesAPI = {
+  // Repositorio: listado transversal de certificados con cliente y OT asociada
+  list: (params) => api.get('/work-orders/certificates', { params }),
   upload: (itemId, formData) => api.post(`/work-orders/items/${itemId}/certificate`, formData),
   generate: (itemId, data) => api.post(`/work-orders/items/${itemId}/certificate/generate`, data),
   issuanceCheck: (id) => api.get(`/work-orders/certificates/${id}/issuance-check`),

@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { Op } = require('sequelize');
 const {
   CalibrationCertificate,
   CertificateSignature,
@@ -82,6 +83,66 @@ const CERTIFICATE_INCLUDES = [
     ],
   },
 ];
+
+// Repositorio de certificados: a diferencia del resto del módulo, donde se
+// llega al certificado navegando OT -> ítem, acá se listan TODOS los
+// certificados con su cliente y su OT asociada, filtrables por texto libre
+// (código de certificado, código de OT, cliente o instrumento). Incluye los
+// 'superseded' para no perder la trazabilidad de las enmiendas (7.8.8): se
+// filtran por estado si se quiere ver sólo los vigentes.
+exports.getCertificates = async (req, res) => {
+  try {
+    const { search, cliente_id, estado, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const where = {};
+    if (estado) where.estado = estado;
+    if (cliente_id) where['$item.ordenTrabajo.cliente_id$'] = cliente_id;
+    if (search) {
+      const patron = `%${search}%`;
+      where[Op.or] = [
+        { codigo: { [Op.iLike]: patron } },
+        { '$item.ordenTrabajo.codigo$': { [Op.iLike]: patron } },
+        { '$item.ordenTrabajo.cliente.nombre$': { [Op.iLike]: patron } },
+        { '$item.ordenTrabajo.cliente.identificacion_fiscal$': { [Op.iLike]: patron } },
+        { '$item.instrumento.codigo_interno$': { [Op.iLike]: patron } },
+        { '$item.instrumento.numero_serie$': { [Op.iLike]: patron } },
+      ];
+    }
+
+    // subQuery: false es necesario para que los filtros sobre columnas de los
+    // includes ($item.ordenTrabajo...$) queden en el mismo SELECT que el LIMIT.
+    const { rows, count } = await CalibrationCertificate.findAndCountAll({
+      where,
+      include: [
+        ...CERTIFICATE_INCLUDES,
+        { model: CalibrationCertificate, as: 'certificadoOriginal', attributes: ['id', 'codigo'] },
+      ],
+      offset,
+      limit: parseInt(limit),
+      order: [['createdAt', 'DESC']],
+      subQuery: false,
+      distinct: true,
+    });
+
+    res.json({
+      success: true,
+      data: rows,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(count / limit),
+      },
+    });
+  } catch (error) {
+    logger.error(`[CALIBRATION_CERTIFICATES] Error obteniendo el repositorio de certificados: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: { code: 'GET_CERTIFICATES_ERROR', message: 'Error obteniendo los certificados' },
+    });
+  }
+};
 
 // Subir el PDF firmado del certificado para un ítem de orden de trabajo (borrador)
 exports.uploadCertificate = async (req, res) => {

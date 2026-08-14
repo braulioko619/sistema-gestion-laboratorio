@@ -374,6 +374,15 @@
   margin-bottom: 0;
 }
 
+/* Paginación (repositorio de certificados) */
+.cal-paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 15px;
+}
+
 /* Formulario en línea (direcciones/contactos dentro del detalle de cliente) */
 .cal-inline-form {
   display: flex;

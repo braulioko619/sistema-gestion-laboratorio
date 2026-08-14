@@ -11,6 +11,7 @@ import {
   usersAPI,
 } from '../services/api';
 import CotizacionesPanel from './CotizacionesPanel';
+import CertificadosPanel from './CertificadosPanel';
 import CalibracionesDashboard from './CalibracionesDashboard';
 import ServiceScheduler from './ServiceScheduler';
 import MuestrasPanel from './MuestrasPanel';
@@ -633,6 +634,7 @@ function Calibraciones() {
         <button className={`cal-tab ${tab === 'instrumentos' ? 'active' : ''}`} onClick={() => setTab('instrumentos')}>Instrumentos</button>
         <button className={`cal-tab ${tab === 'muestras' ? 'active' : ''}`} onClick={() => setTab('muestras')}>Muestras</button>
         <button className={`cal-tab ${tab === 'ordenes' ? 'active' : ''}`} onClick={() => setTab('ordenes')}>Órdenes de Trabajo</button>
+        <button className={`cal-tab ${tab === 'certificados' ? 'active' : ''}`} onClick={() => setTab('certificados')}>📁 Certificados</button>
         <button className={`cal-tab ${tab === 'cotizaciones' ? 'active' : ''}`} onClick={() => setTab('cotizaciones')}>Cotizaciones</button>
         <button className={`cal-tab ${tab === 'calendarizacion' ? 'active' : ''}`} onClick={() => setTab('calendarizacion')}>📅 Calendarización</button>
         <button className={`cal-tab ${tab === 'equipos' ? 'active' : ''}`} onClick={() => setTab('equipos')}>Equipos Patrones</button>
@@ -1017,6 +1019,13 @@ function Calibraciones() {
           </div>
           )}
         </div>
+      )}
+
+      {tab === 'certificados' && (
+        <CertificadosPanel
+          clientes={clientes}
+          onVerOrdenTrabajo={openOrdenDetail}
+        />
       )}
 
       {tab === 'cotizaciones' && (

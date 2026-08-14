@@ -22,6 +22,8 @@ const ROLES_CERTIFICADO = ['administrador', 'jefe_laboratorio'];
 
 // Consulta: cualquier usuario autenticado
 router.get('/', WorkOrderController.getWorkOrders);
+// Repositorio de certificados: rutas literales, deben ir antes de '/:id'
+router.get('/certificates', CalibrationCertificateController.getCertificates);
 router.get('/certificates/:id/download', CalibrationCertificateController.downloadCertificate);
 // Bandeja de facturación: rutas literales, deben ir antes de '/:id'
 router.get('/billing-queue', authorizeRole(ROLES_GESTION), WorkOrderController.getBillingQueue);
