@@ -1,6 +1,6 @@
 'use strict';
 
-const bcrypt = require('bcryptjs');
+const { hashSeedPassword } = require('../utils/seedPassword');
 
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -66,8 +66,7 @@ module.exports = {
 
       // 2. Create default admin user
       const saltRounds = 10;
-      const defaultPassword = 'Admin@123';
-      const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
+      const hashedPassword = await hashSeedPassword(saltRounds);
 
       const adminUser = [
         {
@@ -93,7 +92,7 @@ module.exports = {
           email: 'jefe@laboratorio.com',
           nombre: 'Juan',
           apellido: 'Pérez',
-          password: await bcrypt.hash('Jefe@123', saltRounds),
+          password: await hashSeedPassword(saltRounds),
           roleId: '550e8400-e29b-41d4-a716-446655440002',
           estado: 'activo',
           createdAt: new Date(),
@@ -104,7 +103,7 @@ module.exports = {
           email: 'supervisor@laboratorio.com',
           nombre: 'María',
           apellido: 'García',
-          password: await bcrypt.hash('Super@123', saltRounds),
+          password: await hashSeedPassword(saltRounds),
           roleId: '550e8400-e29b-41d4-a716-446655440003',
           estado: 'activo',
           createdAt: new Date(),
@@ -115,7 +114,7 @@ module.exports = {
           email: 'calidad@laboratorio.com',
           nombre: 'Carlos',
           apellido: 'López',
-          password: await bcrypt.hash('Calidad@123', saltRounds),
+          password: await hashSeedPassword(saltRounds),
           roleId: '550e8400-e29b-41d4-a716-446655440004',
           estado: 'activo',
           createdAt: new Date(),

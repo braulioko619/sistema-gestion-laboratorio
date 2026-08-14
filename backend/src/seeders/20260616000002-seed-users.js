@@ -1,10 +1,10 @@
 'use strict';
 
-const bcrypt = require('bcryptjs');
+const { hashSeedPassword } = require('../utils/seedPassword');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const adminPassword = await bcrypt.hash('Admin@123', 10);
+    const adminPassword = await hashSeedPassword(10);
 
     const users = [
       {
@@ -22,7 +22,7 @@ module.exports = {
       {
         id: '550e8400-e29b-41d4-a716-446655440011',
         email: 'jefe@laboratorio.com',
-        password: await bcrypt.hash('Jefe@123', 10),
+        password: await hashSeedPassword(10),
         nombre: 'Juan',
         apellido: 'García',
         role_id: '550e8400-e29b-41d4-a716-446655440002',
@@ -34,7 +34,7 @@ module.exports = {
       {
         id: '550e8400-e29b-41d4-a716-446655440012',
         email: 'supervisor@laboratorio.com',
-        password: await bcrypt.hash('Supervisor@123', 10),
+        password: await hashSeedPassword(10),
         nombre: 'María',
         apellido: 'López',
         role_id: '550e8400-e29b-41d4-a716-446655440003',
@@ -46,7 +46,7 @@ module.exports = {
       {
         id: '550e8400-e29b-41d4-a716-446655440013',
         email: 'calidad@laboratorio.com',
-        password: await bcrypt.hash('Calidad@123', 10),
+        password: await hashSeedPassword(10),
         nombre: 'Carlos',
         apellido: 'Rodríguez',
         role_id: '550e8400-e29b-41d4-a716-446655440004',

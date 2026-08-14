@@ -94,32 +94,6 @@
   cursor: not-allowed;
 }
 
-.test-credentials {
-  margin-top: 30px;
-  padding-top: 30px;
-  border-top: 1px solid #ecf0f1;
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 4px;
-}
-
-.test-credentials h4 {
-  color: var(--primary-color);
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
-.test-credentials p {
-  font-size: 12px;
-  color: #7f8c8d;
-  margin-bottom: 8px;
-  font-family: monospace;
-}
-
-.test-credentials strong {
-  color: var(--primary-color);
-}
-
 .sso-divider {
   text-align: center;
   color: #95a5a6;

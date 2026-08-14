@@ -1,13 +1,13 @@
 'use strict';
 
-const bcrypt = require('bcryptjs');
+const { hashSeedPassword } = require('../utils/seedPassword');
 
 // Usuario de prueba con el rol signatario_inn, siguiendo el mismo patrón que
 // 20260616000002-seed-users.js (un usuario de ejemplo por rol para
 // desarrollo/pruebas locales).
 module.exports = {
   up: async (queryInterface) => {
-    const password = await bcrypt.hash('Firmante@123', 10);
+    const password = await hashSeedPassword(10);
 
     await queryInterface.bulkInsert('users', [
       {

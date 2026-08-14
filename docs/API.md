@@ -32,7 +32,7 @@ curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..." \
 // Request
 {
   "email": "admin@laboratorio.com",
-  "password": "Admin@123"
+  "password": "<contraseña del usuario>"
 }
 
 // Response (200)

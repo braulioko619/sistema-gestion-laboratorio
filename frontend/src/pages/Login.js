@@ -7,8 +7,8 @@ import './Login.css';
 const lenorLogo = `${process.env.PUBLIC_URL}/Lenor_LogotipoVertical_ColorPositivo.png`;
 
 function Login() {
-  const [email, setEmail] = useState('admin@laboratorio.com');
-  const [password, setPassword] = useState('Admin@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -76,13 +76,6 @@ function Login() {
           Iniciar sesión con Microsoft
         </a>
 
-        <div className="test-credentials">
-          <h4>Credenciales de Prueba:</h4>
-          <p><strong>Admin:</strong> admin@laboratorio.com / Admin@123</p>
-          <p><strong>Jefe:</strong> jefe@laboratorio.com / Jefe@123</p>
-          <p><strong>Supervisor:</strong> supervisor@laboratorio.com / Super@123</p>
-          <p><strong>Calidad:</strong> calidad@laboratorio.com / Calidad@123</p>
-        </div>
       </div>
     </div>
   );

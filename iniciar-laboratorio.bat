@@ -25,9 +25,6 @@ echo =====================================================
 echo   El navegador se abre solo cuando el frontend
 echo   termina de compilar ("Compiled successfully!").
 echo   Si no se abriera, entra a: http://localhost:3000
-echo.
-echo   Usuario: admin@laboratorio.com
-echo   Contrasena: Admin@123
 echo =====================================================
 echo.
 echo   Puedes cerrar esta ventana.

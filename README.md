@@ -121,17 +121,29 @@ npm run migrate
 > npx sequelize-cli db:seed --seed 20260616000001-seed-roles.js
 > ```
 
-### Usuarios de prueba
+### Usuarios de arranque
 
-| Email | Contraseña | Rol |
-|---|---|---|
-| admin@laboratorio.com | `Admin@123` | administrador |
-| jefe@laboratorio.com | `Jefe@123` | jefe_laboratorio |
-| supervisor@laboratorio.com | `Super@123` | supervisor |
-| calidad@laboratorio.com | `Calidad@123` | personal_calidad |
-| firmante@laboratorio.com | `Firmante@123` | signatario_inn |
+Los seeders no llevan contraseñas escritas en el código: toman la variable
+`SEED_PASSWORD` al momento de ejecutarse y fallan si no está definida.
+
+```bash
+SEED_PASSWORD='<contraseña de arranque>' npx sequelize-cli db:seed:all
+```
+
+| Email | Rol |
+|---|---|
+| admin@laboratorio.com | administrador |
+| jefe@laboratorio.com | jefe_laboratorio |
+| supervisor@laboratorio.com | supervisor |
+| calidad@laboratorio.com | personal_calidad |
+| firmante@laboratorio.com | signatario_inn |
 
 Existe además el rol `usuario_lectura`.
+
+> **Cambia estas contraseñas desde la aplicación después del primer ingreso.**
+> Todas las cuentas nacen con la misma clave, y mientras la compartan no hay
+> forma de atribuir con certeza a una persona lo que queda en la bitácora de
+> auditoría: firmas de certificados, emisiones y cambios de estado.
 
 ### Tests
 
