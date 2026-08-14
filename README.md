@@ -1,284 +1,250 @@
-# 🏥 Sistema de Gestión Documental y Calidad para Laboratorios
+# Sistema de Gestión de Laboratorio de Calibración e Inspección
 
-Sistema integral de gestión documental y control de calidad para laboratorios que cumple con estándares **ISO/IEC 17025** e **ISO 10720**.
+Sistema web para la operación completa de un laboratorio de calibración e inspección bajo **ISO/IEC 17025** e **ISO/IEC 17020**: desde la cotización al cliente hasta la emisión firmada del certificado, con trazabilidad metrológica, cálculo de incertidumbre según GUM y auditoría inalterable.
 
-## 📋 Descripción
-
-Este proyecto proporciona una solución completa para:
-- **Gestión de documentos** con versionado y control de cambios
-- **Registro de indicadores de calidad** con validación automática
-- **Auditoría completa** de todas las acciones del sistema
-- **Control de acceso** basado en roles y permisos
-- **Cumplimiento normativo** con trazabilidad total
-
-## 🚀 Características Principales
-
-✅ **Autenticación segura** - JWT con refresh tokens  
-✅ **Gestión de documentos** - Crear, editar, versionar, publicar  
-✅ **Control de calidad** - Registrar indicadores con límites automáticos  
-✅ **Auditoría completa** - Trazabilidad de todas las acciones  
-✅ **Roles y permisos** - Administrador, Jefe, Supervisor, Personal de Calidad  
-✅ **Exportación de reportes** - JSON, CSV, PDF  
-✅ **API REST documentada** - OpenAPI ready  
-✅ **Docker Compose** - Ambiente de desarrollo y producción  
-✅ **Responsive UI** - Frontend moderno con React  
-
-## 🛠 Stack Tecnológico
-
-### Backend
-- **Node.js 18** con Express.js
-- **PostgreSQL 15** para persistencia
-- **Sequelize ORM** para gestión de datos
-- **JWT** para autenticación
-- **bcryptjs** para encriptación de contraseñas
-
-### Frontend
-- **React 18** con React Router
-- **Axios** para llamadas HTTP
-- **CSS3** para estilos responsivos
-- **React Icons** para iconografía
-
-### DevOps
-- **Docker & Docker Compose** para containerización
-- **PostgreSQL Alpine** para optimización
-- **Morgan** para logging HTTP
-
-## 📦 Estructura del Proyecto
-
-```
-sistema-gestion-laboratorio/
-├── backend/                          # API REST Node.js
-│   ├── src/
-│   │   ├── config/                  # Configuración (env, logger, db)
-│   │   ├── models/                  # Modelos Sequelize
-│   │   ├── controllers/             # Lógica de negocio
-│   │   ├── routes/                  # Definición de rutas
-│   │   ├── middleware/              # Middleware (auth, audit, errors)
-│   │   ├── migrations/              # Migraciones de BD
-│   │   ├── seeders/                 # Datos iniciales
-│   │   ├── app.js                   # Configuración Express
-│   │   └── server.js                # Punto de entrada
-│   ├── scripts/
-│   │   └── init-db.sql              # Script de inicialización
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .sequelizerc
-│
-├── frontend/                         # Cliente React
-│   ├── src/
-│   │   ├── components/              # Componentes reutilizables
-│   │   ├── pages/                   # Páginas principales
-│   │   ├── services/                # Cliente API
-│   │   ├── context/                 # Context de autenticación
-│   │   ├── App.js
-│   │   └── index.js
-│   ├── public/
-│   │   └── index.html
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .env.local
-│
-├── docs/                             # Documentación
-│   └── API.md                        # Especificación API
-│
-├── docker-compose.yml                # Orquestación de contenedores
-├── .env.example                      # Variables de ejemplo
-└── README.md                         # Este archivo
-```
-
-## ⚡ Inicio Rápido
-
-### Requisitos Previos
-- Docker 20.10+
-- Docker Compose 2.0+
-- Git
-
-### 1. Clonar el repositorio
-```bash
-git clone https://github.com/braulioko619/sistema-gestion-laboratorio.git
-cd sistema-gestion-laboratorio
-```
-
-### 2. Configurar variables de entorno
-```bash
-cp .env.example .env
-# Edita .env si necesitas cambiar valores (opcional para desarrollo)
-```
-
-### 3. Ejecutar con Docker Compose
-```bash
-docker-compose up
-```
-
-El sistema estará disponible en:
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:3001
-- **API Health:** http://localhost:3001/api/health
-
-### 4. Inicia sesión con credenciales de prueba
-
-**Predeterminadas en login (auto-completadas):**
-- Email: `admin@laboratorio.com`
-- Contraseña: `Admin@123`
-
-**Otros usuarios:**
-| Usuario | Email | Contraseña | Rol |
-|---------|-------|-----------|-----|
-| Jefe | jefe@laboratorio.com | Jefe@123 | jefe_laboratorio |
-| Supervisor | supervisor@laboratorio.com | Super@123 | supervisor |
-| Calidad | calidad@laboratorio.com | Calidad@123 | personal_calidad |
-
-## 📖 Documentación
-
-### API REST
-La documentación completa de la API está en [`docs/API.md`](docs/API.md)
-
-**Ejemplos de endpoints principales:**
-```bash
-# Autenticación
-POST /api/auth/login
-POST /api/auth/register
-POST /api/auth/refresh
-
-# Documentos
-GET /api/documents?page=1&limit=10
-POST /api/documents
-PUT /api/documents/:id
-POST /api/documents/:id/publish
-GET /api/documents/:id/versions
-
-# Calidad
-GET /api/quality/records
-POST /api/quality/records
-GET /api/quality/indicators
-
-# Auditoría
-GET /api/audit/logs?accion=crear&entidad=document
-GET /api/audit/report?formato=pdf&fecha_desde=2026-06-01
-
-# Usuarios
-GET /api/users
-```
-
-### Guías
-- [Guía de Configuración](docs/SETUP.md) - Cómo ejecutar en desarrollo/producción
-- [Guía de Desarrollo](docs/DEVELOPMENT.md) - Cómo trabajar con el código
-- [Especificación API](docs/API.md) - Referencia completa de endpoints
-
-## 👥 Roles y Permisos
-
-| Rol | Documentos | Calidad | Auditoría | Usuarios |
-|-----|-----------|---------|-----------|----------|
-| **administrador** | CRUD + Publicar | Lectura | Lectura | Gestión |
-| **jefe_laboratorio** | CRUD + Publicar | CRUD | Lectura | Lectura |
-| **supervisor** | CRUD | CRUD | Lectura | - |
-| **personal_calidad** | Lectura | CRUD | - | - |
-
-## 🔐 Seguridad
-
-✅ Contraseñas encriptadas con bcrypt (10 rounds)  
-✅ JWT con expiración de 7 días  
-✅ Refresh tokens para renovación segura  
-✅ Rate limiting en todos los endpoints  
-✅ CORS configurado  
-✅ Helmet para headers de seguridad  
-✅ Auditoría completa de cambios  
-✅ Validación de entrada en todos los endpoints  
-
-## 🗄️ Base de Datos
-
-**Modelos principales:**
-- `User` - Usuarios del sistema
-- `Role` - Roles y permisos
-- `Document` - Documentos
-- `DocumentVersion` - Historial de versiones
-- `QualityRecord` - Registros de calidad
-- `AuditLog` - Log de auditoría
-
-**Migraciones automáticas** al iniciar el backend
-
-## 🐛 Troubleshooting
-
-### Puerto ya en uso
-```bash
-# Cambiar puerto en .env
-PORT=3002
-REACT_APP_API_URL=http://localhost:3002
-```
-
-### Error de conexión a BD
-```bash
-# Verificar que PostgreSQL esté corriendo
-docker-compose logs postgres
-
-# Reiniciar contenedores
-docker-compose down
-docker-compose up --build
-```
-
-### Limpiar todo
-```bash
-docker-compose down -v
-docker system prune
-docker-compose up
-```
-
-## 📝 Variables de Entorno
-
-Ver `.env.example` para la lista completa.
-
-**Principales:**
-```env
-# Base de datos
-DB_HOST=postgres
-DB_PORT=5432
-DB_NAME=laboratorio_db
-DB_USER=lab_user
-DB_PASSWORD=lab_password
-
-# Servidor
-PORT=3001
-NODE_ENV=development
-
-# JWT
-JWT_SECRET=tu_secret_jwt_muy_largo_y_aleatorio_minimo_32_caracteres
-JWT_EXPIRE=7d
-
-# Frontend
-REACT_APP_API_URL=http://localhost:3001
-```
-
-## 🤝 Contribución
-
-Las contribuciones son bienvenidas. Para cambios mayores:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/mejora`)
-3. Commit tus cambios (`git commit -am 'Agrega mejora'`)
-4. Push a la rama (`git push origin feature/mejora`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-MIT License - ver `LICENSE` para detalles
-
-## 📧 Soporte
-
-Para preguntas o problemas, abre un [issue en GitHub](https://github.com/braulioko619/sistema-gestion-laboratorio/issues)
-
-## 🎯 Roadmap Futuro
-
-- [ ] Exportación de documentos en PDF
-- [ ] Integración con LDAP/Active Directory
-- [ ] Gráficas de control de calidad
-- [ ] Alertas automáticas de cumplimiento
-- [ ] Gestión de calibración de equipos
-- [ ] Informes ISO 17025 automatizados
-- [ ] Aplicación móvil nativa
-- [ ] Integración con sistemas LIMS
+No es un LIMS de ensayos analíticos: la unidad de trabajo es el **instrumento del cliente**, no la muestra de producto.
 
 ---
 
-**Última actualización:** Junio 2026  
-**Versión:** 1.0.0  
-**Autor:** Braulio Gutierrez
+## Qué hace
+
+### Flujo comercial-operativo
+
+Cadena completa con marca de acreditación propagada extremo a extremo:
+
+```
+Tarifario → Cotización → Orden de Trabajo → Calibración → Certificado → Lista para facturar
+```
+
+- **Clientes (CRM):** direcciones y contactos múltiples, parque de instrumentos por cliente, control de órdenes de compra, facturas y notas de crédito.
+- **Tarifario y cotizaciones:** precios por servicio, generación de cotización con historial y PDF de marca, servicios marcados como acreditados o no acreditados, ítems de terreno.
+- **Órdenes de trabajo:** derivadas de la cotización, con ítems, patrones asignados por ítem y estado de facturación.
+- **Recepción de instrumentos:** registro de ingreso con condición de recepción, correlativo propio y enlace a la OT.
+- **Visitas de servicio:** planificación de trabajos en terreno.
+
+### Emisión controlada de certificados (núcleo INN)
+
+El certificado no se emite si no pasa el **motor de reglas** (`CertificateIssuanceService`), que verifica en un solo lugar y deja registro auditado de cada bloqueo:
+
+| Verificación | Qué controla |
+|---|---|
+| Patrón vigente | El patrón usado tenía calibración válida a la fecha del servicio |
+| Técnico autorizado | El ejecutor tenía autorización vigente para esa magnitud/procedimiento |
+| Raw data presente | Existe el Excel o el formulario de captura asociado al ítem |
+| Alcance INN | El servicio acreditado está dentro del alcance vigente del laboratorio |
+| Signatario disponible | Existe un usuario activo con rol `signatario_inn` |
+
+Además:
+
+- **Certificados inmutables** una vez emitidos. Las correcciones se hacen por **enmienda**: un certificado nuevo que referencia y supersede al anterior (ISO 17025 7.8.8).
+- **Firma electrónica** con registro auditado (usuario, timestamp, SHA-256 del PDF). Los certificados acreditados exigen rol `signatario_inn`. El modelo ya contempla firma avanzada (FEA, Ley 19.799) sin cambio de esquema.
+- **PDF generado internamente** con `pdfkit`, incluyendo el bloque de acreditación cuando corresponde.
+- **Correlativos atómicos** por tipo y año (`CorrelativeService`), sin condiciones de carrera ni reutilización de números.
+
+### Captura de datos
+
+Dos caminos, ambos trazables:
+
+- **Guardián de plantillas Excel:** plantillas versionadas con SHA-256, una sola versión vigente por plantilla, descarga controlada y verificación de integridad al recibir el archivo del técnico.
+- **Formularios dinámicos:** plantillas definidas con JSON Schema (validadas con `ajv`) y datos en JSONB. Permite incorporar instrumentos nuevos sin tocar el esquema de base de datos. Una entrada confirmada queda inmutable.
+
+### Base metrológica
+
+- **Historial de patrones:** cada punto calibrado de cada patrón, con valor nominal, valor certificado, incertidumbre y factor k. Importable desde CSV.
+- **Análisis de deriva** (`DriftAnalysisService`): regresión lineal sobre el histórico, con mínimo de 3 calibraciones antes de reportar pendiente y comparación contra el error máximo permitido del patrón.
+- **Cartas de control** (`ControlChartService`): carta Shewhart de valores individuales por equipo y punto, con rango móvil (n=2, d₂=1.128).
+- **Alertas de estabilidad:** job diario (`node-cron`) que avisa cuando un patrón se acerca a su límite.
+- **Motor de incertidumbre GUM** (`UncertaintyEngineService`): cálculo dentro del sistema. Implementado para **Pie de Metros** en sus cuatro secciones (topes de exteriores, interiores, profundímetro y escalón), validado celda por celda contra las planillas de origen.
+
+### Calidad y cumplimiento
+
+- **Gestión documental** con versionado, publicación y adjuntos.
+- **Indicadores de calidad** con límites y validación automática.
+- **No conformidades** con seguimiento.
+- **Auditorías internas** con checklists precargados para **ISO 17025** e **ISO 17020**, y registro de hallazgos.
+- **Personal:** matriz de competencias, autorizaciones por procedimiento y por magnitud, con vigencia.
+- **Equipos:** ficha metrológica (magnitud, rango, resolución, error máximo permitido, sede, categoría), imágenes, documentos y bitácora de eventos.
+- **Alcance de acreditación** modelado como dato, no como documento suelto.
+- **Validación de software (7.11.2)** registrada en tabla, con suite de tests por etapa como evidencia.
+
+### Auditoría
+
+`AuditLog` con **encadenamiento de hashes** (`pgcrypto`, columnas `secuencia`, `hash_anterior`, `hash_actual`) y trigger de PostgreSQL que impide UPDATE y DELETE. La cadena se verifica con:
+
+```bash
+npm run verify-audit-chain
+```
+
+Registra además los eventos críticos del flujo: descarga de plantilla, subida de Excel, verificación de hash, firma, bloqueo de emisión y supersede.
+
+---
+
+## Stack
+
+**Backend** — Node.js 18, Express 4, Sequelize 6, PostgreSQL 15, JWT + MSAL (SSO Microsoft), `pdfkit`, `ajv`, `xlsx`, `node-cron`, `nodemailer`, Winston. Tests con Jest + Supertest.
+
+**Frontend** — React 18, React Router 6, Axios, Recharts, React Icons.
+
+**Infra** — Docker Compose (postgres + backend + frontend).
+
+---
+
+## Puesta en marcha
+
+### Requisitos
+
+Docker 20.10+ y Docker Compose 2.0+. Para desarrollo sin contenedores: Node.js 18 y PostgreSQL 15.
+
+### Arranque
+
+```bash
+cp .env.example .env
+docker-compose up
+```
+
+- Frontend: http://localhost:3000
+- API: http://localhost:3001
+- Health: http://localhost:3001/api/health
+
+En Windows también existen `iniciar-laboratorio.bat`, `start-backend.bat` y `start-frontend.bat`.
+
+### Migraciones y datos iniciales
+
+```bash
+cd backend
+npm run migrate
+```
+
+> **Atención con los seeders.** `npm run seed` está roto: el archivo `seeders/20260616000001-seed-roles-and-admin.js` inserta en tablas `"Roles"`/`"Users"` (mayúsculas) que no existen — las reales son `roles`/`users`. Como Sequelize ordena por nombre de archivo, ese seeder corre primero y aborta todo. Mientras no se decida borrarlo o corregirlo, hay que sembrar archivo por archivo:
+>
+> ```bash
+> npx sequelize-cli db:seed --seed 20260616000001-seed-roles.js
+> ```
+
+### Usuarios de prueba
+
+| Email | Contraseña | Rol |
+|---|---|---|
+| admin@laboratorio.com | `Admin@123` | administrador |
+| jefe@laboratorio.com | `Jefe@123` | jefe_laboratorio |
+| supervisor@laboratorio.com | `Super@123` | supervisor |
+| calidad@laboratorio.com | `Calidad@123` | personal_calidad |
+| firmante@laboratorio.com | `Firmante@123` | signatario_inn |
+
+Existe además el rol `usuario_lectura`.
+
+### Tests
+
+```bash
+cd backend
+npm test
+```
+
+> El paso `pretest` crea la base `sgl_test`, lo que exige que el usuario de Postgres pueda crear bases. Si falla, ejecutar como superusuario: `ALTER ROLE lab_user CREATEDB;`
+
+Cubren: motor GUM, servicio de emisión, correlativos bajo concurrencia, deriva, cartas de control, alertas de estabilidad, inmutabilidad del audit log, y tres flujos E2E (cotización→facturación, guardián de Excel, captura y base metrológica).
+
+---
+
+## Estructura
+
+```
+backend/src/
+├── config/          env, logger, msal
+├── models/          48 modelos Sequelize
+├── controllers/     32 controladores
+├── routes/          22 grupos de rutas bajo /api
+├── services/        motor de emisión, GUM, deriva, cartas de control,
+│                    correlativos, autorizaciones, alertas, email
+├── middleware/       auth, audit, rate limit, uploads especializados
+├── migrations/      62 migraciones (nunca editar una ya ejecutada)
+├── jobs/            job diario de alertas de estabilidad
+└── utils/           PDF de certificado, cotización y auditoría; branding
+
+frontend/src/
+├── pages/           Home, Documents, Quality, NonConformities, Personnel,
+│                    InternalAudits, Audit, Calibraciones, ControlMetrologico
+│                    (Calibraciones agrupa como paneles: dashboard, cotizaciones,
+│                     muestras, agenda de servicios y equipos)
+├── components/      Navbar, DateBar
+├── context/         AuthContext
+└── services/        cliente API
+
+docs/
+├── PLAN_DESARROLLO.md    plan por etapas, decisiones de arquitectura y estado
+├── PLAN_4.1_MOTOR_GUM.md diseño del motor de incertidumbre
+└── API.md                referencia REST (parcial, ver nota)
+```
+
+---
+
+## API
+
+Base: `/api`. Todos los endpoints salvo login requieren `Authorization: Bearer <token>`.
+
+```
+/auth              /documents          /quality           /nonconformities
+/equipment         /personnel          /internal-audits   /checklist-template
+/users             /audit              /clients           /work-orders
+/samples           /service-visits     /dashboard         /accreditations
+/commercial-documents  /price-list     /quotes            /software-validations
+/excel-templates   /calibration-form-templates
+```
+
+> **`docs/API.md` está incompleto:** documenta solo los nueve primeros grupos (los módulos de calidad y documental). Los trece grupos del módulo de calibración —clientes, cotizaciones, órdenes de trabajo, certificados, plantillas, muestras, visitas— no están documentados ahí; la referencia vigente son los archivos en `backend/src/routes/`.
+
+---
+
+## Roles
+
+La autorización se aplica por ruta con `authorizeRole`. Patrón general:
+
+| Rol | Alcance |
+|---|---|
+| `administrador` | Todo, incluida gestión de usuarios |
+| `jefe_laboratorio` | Operación completa + emisión y envío de certificados |
+| `supervisor` | Gestión operativa y de calidad, sin emisión |
+| `personal_calidad` | Gestión de calidad y operación, sin emisión |
+| `signatario_inn` | Único autorizado a firmar certificados **acreditados** |
+| `usuario_lectura` | Consulta |
+
+La consulta de órdenes de trabajo y la descarga de certificados están abiertas a cualquier usuario autenticado; la emisión y el envío quedan restringidos a administración y jefatura.
+
+---
+
+## Seguridad
+
+- Contraseñas con bcrypt; JWT con refresh token; SSO Microsoft vía MSAL.
+- Rate limiting, CORS y Helmet.
+- SHA-256 en todo archivo que constituya evidencia (plantillas, raw data, PDF firmado).
+- Audit log encadenado por hash e inmutable a nivel de base de datos.
+- Certificados emitidos bloqueados contra edición y borrado.
+
+---
+
+## Estado y pendientes
+
+El desarrollo sigue `docs/PLAN_DESARROLLO.md`, organizado en cinco etapas. Las etapas 0 a 3 están cerradas y la etapa 4 está en curso.
+
+**Pendiente en etapa 4:**
+
+- **4.2** — Extender el motor GUM más allá de Pie de Metros al resto de magnitudes.
+- **4.3** — Firma Electrónica Avanzada: falta elegir proveedor acreditado (E-Sign, Acepta/Sovos, IDOK) e integrar PAdES.
+- **4.6** — Endurecimiento de producción: definir despliegue, respaldos automatizados con prueba de restauración, HTTPS y rotación de secretos.
+
+**Deuda técnica conocida:**
+
+- Seeder `20260616000001-seed-roles-and-admin.js` roto (ver arriba); bloquea `npm run seed`.
+- `users.auth_provider` divergió: migración y modelo lo declaran `STRING` con default `local`, pero en la base de desarrollo es un `ENUM` con default `microsoft`.
+- `NonConformity.generarCodigo` e `InternalAudit.generarCodigo` siguen usando `COUNT(*)`, el patrón con condición de carrera que ya se corrigió en certificados, OT y cotizaciones.
+- `.env.example` no incluye las variables de SSO que el código sí usa: `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_REDIRECT_URI`, `FRONTEND_URL`, `JWT_REFRESH_SECRET`, `SMTP_SECURE`.
+
+**Decisiones abiertas:** despliegue local vs. nube, proveedor de FEA, y número de casos de validación numérica por magnitud.
+
+---
+
+## Licencia
+
+MIT — ver `LICENSE`.
+
+**Autor:** Braulio Gutiérrez
