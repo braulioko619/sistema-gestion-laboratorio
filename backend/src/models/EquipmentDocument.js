@@ -40,6 +40,25 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: false,
     },
+    // Revisión del documento: aprobado o rechazado por jefatura o calidad.
+    estado_firma: {
+      type: DataTypes.ENUM('pendiente', 'aprobado', 'rechazado'),
+      allowNull: false,
+      defaultValue: 'pendiente',
+    },
+    firmado_por: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
+    firmado_en: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    comentario_firma: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Obligatorio al rechazar: motivo del rechazo',
+    },
   }, {
     tableName: 'equipment_documents',
     timestamps: true,
@@ -53,6 +72,10 @@ module.exports = (sequelize, DataTypes) => {
     EquipmentDocument.belongsTo(models.User, {
       foreignKey: 'subido_por',
       as: 'usuario',
+    });
+    EquipmentDocument.belongsTo(models.User, {
+      foreignKey: 'firmado_por',
+      as: 'firmante',
     });
   };
 

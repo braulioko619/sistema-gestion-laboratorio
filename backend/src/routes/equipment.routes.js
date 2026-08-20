@@ -20,6 +20,14 @@ const ROLES_GESTION = [
   'personal_calidad',
 ];
 
+// Firmar la revisión de un documento es más restrictivo que subirlo: un
+// supervisor puede cargar el certificado, pero no aprobarlo ni rechazarlo.
+const ROLES_FIRMA_DOCUMENTO = [
+  'administrador',
+  'jefe_laboratorio',
+  'personal_calidad',
+];
+
 // Consulta: cualquier usuario autenticado
 router.get('/', EquipmentController.getEquipment);
 router.get('/alerts', EquipmentController.getEquipmentAlerts);
@@ -65,6 +73,14 @@ router.post(
   EquipmentDocumentController.uploadDocuments
 );
 router.get('/documents/:documentId/download', EquipmentDocumentController.downloadDocument);
+// Ver el archivo en pantalla (inline) en vez de descargarlo.
+router.get('/documents/:documentId/preview', EquipmentDocumentController.previewDocument);
+// Firma de revisión: aprobar o rechazar el certificado / la verificación.
+router.patch(
+  '/documents/:documentId/sign',
+  authorizeRole(ROLES_FIRMA_DOCUMENTO),
+  EquipmentDocumentController.signDocument
+);
 
 // Bitácora del instrumento con control de cambio: entradas inmutables, una
 // corrección se registra como una entrada nueva (sin update/delete).
