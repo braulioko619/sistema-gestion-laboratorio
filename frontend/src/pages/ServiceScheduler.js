@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { serviceVisitsAPI } from '../services/api';
+import { serviceVisitsAPI, assuranceAPI } from '../services/api';
 import './ServiceScheduler.css';
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -16,6 +16,37 @@ const ESTADOS_VISITA = {
 };
 
 const COLORES_TECNICO = ['#00857d', '#2874a6', '#b9770e', '#7d3c98', '#c0392b', '#1e8449', '#a93226', '#117864'];
+
+// Actividades de aseguramiento (§7.7): se programan por fecha, sin hora, así
+// que en la agenda van en una franja de "todo el día" sobre la grilla horaria.
+// Se gestionan en la pestaña Aseguramiento; aquí solo se muestran.
+const TIPOS_ASEGURAMIENTO = {
+  control_patron: 'Control con patrón',
+  repetibilidad: 'Repetibilidad',
+  carta_control: 'Carta de control',
+  verificacion_intermedia: 'Verificación intermedia',
+  recalibracion_item: 'Recalibración de ítem',
+  ensayo_aptitud: 'Ensayo de aptitud',
+  intercomparacion: 'Intercomparación',
+  revision_resultados: 'Revisión de resultados',
+  correlacion_resultados: 'Correlación de resultados',
+  auditoria_tecnica: 'Auditoría técnica',
+  testificacion: 'Testificación',
+};
+
+const ESTADOS_ASEGURAMIENTO = {
+  planificada: 'Planificada',
+  en_ejecucion: 'En ejecución',
+  ejecutada: 'Ejecutada',
+  cancelada: 'Cancelada',
+};
+
+const RESULTADOS_ASEGURAMIENTO = {
+  pendiente: 'Pendiente',
+  conforme: 'Conforme',
+  no_conforme: 'No conforme',
+  no_concluyente: 'No concluyente',
+};
 
 const FORM_VISITA_VACIO = {
   tecnico_id: '',
@@ -75,6 +106,9 @@ function colorTecnico(tecnicoId, tecnicos) {
 function ServiceScheduler({ users, ordenes, puedeGestionar }) {
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [visitas, setVisitas] = useState([]);
+  const [actividades, setActividades] = useState([]);
+  const [verAseguramiento, setVerAseguramiento] = useState(true);
+  const [detalleActividad, setDetalleActividad] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filtroTecnico, setFiltroTecnico] = useState('');
@@ -102,11 +136,38 @@ function ServiceScheduler({ users, ordenes, puedeGestionar }) {
     }
   }, [weekStart, filtroTecnico]);
 
+  // Actividades de aseguramiento de la misma semana. Si la consulta falla, la
+  // agenda de servicios sigue funcionando igual.
+  const fetchActividades = useCallback(async () => {
+    try {
+      const res = await assuranceAPI.list({
+        desde: toISODate(weekStart),
+        hasta: toISODate(addDays(weekStart, 6)),
+      });
+      setActividades(res.data.data);
+    } catch (err) {
+      setActividades([]);
+    }
+  }, [weekStart]);
+
   useEffect(() => {
     fetchVisitas();
   }, [fetchVisitas]);
 
+  useEffect(() => {
+    fetchActividades();
+  }, [fetchActividades]);
+
   const visitasPorDia = (fechaISO) => visitas.filter((v) => v.fecha === fechaISO);
+
+  const actividadesPorDia = (fechaISO) => (
+    verAseguramiento ? actividades.filter((a) => a.fecha_planificada === fechaISO) : []
+  );
+
+  const hoyISO = toISODate(new Date());
+  const actividadVencida = (a) => (
+    a.fecha_planificada < hoyISO && !['ejecutada', 'cancelada'].includes(a.estado)
+  );
 
   const resetForm = () => {
     setFormVisita(FORM_VISITA_VACIO);
@@ -205,6 +266,14 @@ function ServiceScheduler({ users, ordenes, puedeGestionar }) {
             <span className="sched-legend-dot" style={{ background: colorTecnico(u.id, users) }}></span>{u.nombre}
           </span>
         ))}
+        <label className="sched-legend-item sched-legend-toggle">
+          <input
+            type="checkbox"
+            checked={verAseguramiento}
+            onChange={(e) => setVerAseguramiento(e.target.checked)}
+          />
+          Mostrar aseguramiento ({actividades.length})
+        </label>
       </div>
 
       <div className="sched-grid-wrapper">
@@ -219,6 +288,34 @@ function ServiceScheduler({ users, ordenes, puedeGestionar }) {
               )}
             </div>
           ))}
+
+          {/* Franja de todo el día: actividades de aseguramiento (sin hora). */}
+          {verAseguramiento && (
+            <>
+              {/* La columna de horas mide 60 px: "Aseguramiento" completo no cabe. */}
+              <div className="sched-allday-label" title="Actividades de aseguramiento (§7.7)">Aseg.</div>
+              {dias.map((d, i) => {
+                const fechaISO = toISODate(d);
+                const delDia = actividadesPorDia(fechaISO);
+                return (
+                  <div key={`aseg-${i}`} className="sched-allday-cell">
+                    {delDia.map((a) => (
+                      <button
+                        key={a.id}
+                        type="button"
+                        className={`sched-aseg sched-aseg-${a.resultado}${actividadVencida(a) ? ' sched-aseg-vencida' : ''}`}
+                        onClick={() => setDetalleActividad(a)}
+                        title={`${a.codigo} · ${TIPOS_ASEGURAMIENTO[a.tipo] || a.tipo}`}
+                      >
+                        <strong>{a.codigo}</strong>
+                        <span className="sched-aseg-tipo">{TIPOS_ASEGURAMIENTO[a.tipo] || a.tipo}</span>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
+            </>
+          )}
 
           <div className="sched-hours-col" style={{ height: alturaGrilla }}>
             {horas.map((h) => (
@@ -383,6 +480,40 @@ function ServiceScheduler({ users, ordenes, puedeGestionar }) {
                 </select>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Detalle de una actividad de aseguramiento. Solo lectura: se edita en
+          la pestaña Aseguramiento, que es donde vive el módulo. */}
+      {detalleActividad && (
+        <div className="sched-modal-overlay" onClick={() => setDetalleActividad(null)}>
+          <div className="sched-modal card" onClick={(e) => e.stopPropagation()}>
+            <div className="sched-modal-header">
+              <h2>{detalleActividad.codigo}</h2>
+              <button className="sched-close" onClick={() => setDetalleActividad(null)}>✕</button>
+            </div>
+
+            <div className="cal-detail-grid">
+              <p><strong>Actividad:</strong> {TIPOS_ASEGURAMIENTO[detalleActividad.tipo] || detalleActividad.tipo}</p>
+              <p><strong>Alcance:</strong> {detalleActividad.alcance}</p>
+              <p><strong>Magnitud:</strong> {detalleActividad.magnitud || '—'}</p>
+              <p><strong>Responsable:</strong> {detalleActividad.responsable?.nombre || '—'}</p>
+              <p><strong>Planificada:</strong> {detalleActividad.fecha_planificada}</p>
+              <p><strong>Ejecutada:</strong> {detalleActividad.fecha_ejecucion || '—'}</p>
+              <p><strong>Estado:</strong> {ESTADOS_ASEGURAMIENTO[detalleActividad.estado]}</p>
+              <p><strong>Resultado:</strong> {RESULTADOS_ASEGURAMIENTO[detalleActividad.resultado]}</p>
+            </div>
+
+            {actividadVencida(detalleActividad) && (
+              <div className="alert alert-danger">
+                La fecha planificada ya pasó y la actividad sigue sin ejecutarse.
+              </div>
+            )}
+
+            <p className="sched-aseg-nota">
+              Esta actividad se gestiona en la pestaña <strong>Aseguramiento</strong>.
+            </p>
           </div>
         </div>
       )}

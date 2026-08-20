@@ -117,6 +117,10 @@ export const equipmentAPI = {
   }),
   listDocuments: (id, params) => api.get(`/equipment/${id}/documents`, { params }),
   downloadDocument: (documentId) => api.get(`/equipment/documents/${documentId}/download`, { responseType: 'blob' }),
+  // Mismo archivo, pero servido inline para verlo en pantalla sin descargarlo.
+  previewDocument: (documentId) => api.get(`/equipment/documents/${documentId}/preview`, { responseType: 'blob' }),
+  // Firma de revisión: { estado: 'aprobado' | 'rechazado', comentario }
+  signDocument: (documentId, data) => api.patch(`/equipment/documents/${documentId}/sign`, data),
 
   // Bitácora del instrumento con control de cambio
   createLogEntry: (id, data) => api.post(`/equipment/${id}/log`, data),
@@ -194,6 +198,21 @@ export const workOrdersAPI = {
   markFacturada: (id) => api.patch(`/work-orders/${id}/facturada-externamente`),
   addPatron: (itemId, equipment_id) => api.post(`/work-orders/items/${itemId}/patrones`, { equipment_id }),
   removePatron: (itemId, equipmentId) => api.delete(`/work-orders/items/${itemId}/patrones/${equipmentId}`),
+};
+
+// ASEGURAMIENTO DE LA VALIDEZ DE LOS RESULTADOS (NCh-ISO/IEC 17025 §7.7)
+export const assuranceAPI = {
+  list: (params) => api.get('/assurance', { params }),
+  summary: () => api.get('/assurance/summary'),
+  create: (data) => api.post('/assurance', data),
+  update: (id, data) => api.put(`/assurance/${id}`, data),
+  evaluate: (id, data) => api.post(`/assurance/${id}/evaluate`, data),
+  createNonConformity: (id, data) => api.post(`/assurance/${id}/nonconformity`, data),
+  uploadRecords: (id, formData) => api.post(`/assurance/${id}/records`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  downloadRecord: (recordId) => api.get(`/assurance/records/${recordId}/download`, { responseType: 'blob' }),
+  previewRecord: (recordId) => api.get(`/assurance/records/${recordId}/preview`, { responseType: 'blob' }),
 };
 
 // DASHBOARD (Laboratorio de Calibraciones)

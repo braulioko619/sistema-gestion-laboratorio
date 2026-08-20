@@ -237,3 +237,148 @@
   color: var(--text-light, #698184);
   font-style: italic;
 }
+
+/* ==========================================================================
+   Revisión y firma de documentos, y visor de archivos
+   ========================================================================== */
+
+.badge-firma-pendiente {
+  background: #fdf0d5;
+  color: #8a6100;
+}
+
+.badge-firma-aprobado {
+  background: #d8f3e4;
+  color: #146c43;
+}
+
+.badge-firma-rechazado {
+  background: #fbdcd9;
+  color: #a32b1c;
+}
+
+.cm-firma-detalle {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #5c6f6d;
+}
+
+.cm-firma-comentario {
+  display: block;
+  font-style: italic;
+}
+
+.cm-doc-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cm-doc-acciones button {
+  margin-top: 0;
+}
+
+.cm-btn-aprobar,
+.cm-btn-rechazar {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.22s ease, filter 0.22s ease;
+}
+
+.cm-btn-aprobar {
+  background: linear-gradient(120deg, #15803d, #22a35a);
+}
+
+.cm-btn-rechazar {
+  background: linear-gradient(120deg, #b3261e, #d3453b);
+}
+
+.cm-btn-aprobar:hover:not(:disabled),
+.cm-btn-rechazar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+.cm-firma-acciones {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.cm-modal-firma {
+  max-width: 560px;
+}
+
+/* Visor: ocupa casi toda la pantalla, porque un certificado en PDF se lee
+   mal en una ventana chica. */
+.cm-visor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 59, 55, 0.62);
+  backdrop-filter: blur(5px);
+}
+
+.cm-visor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1100px;
+  height: 92vh;
+  padding: 26px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 26px 60px rgba(11, 59, 55, 0.42);
+}
+
+.cm-visor-cuerpo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  border: 1px solid #d6e4e3;
+  border-radius: 12px;
+  background: #f4f8f8;
+}
+
+.cm-visor-marco {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.cm-visor-imagen {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.cm-visor-pie {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+}
+
+@media (max-width: 620px) {
+  .cm-visor {
+    height: 96vh;
+    padding: 16px;
+  }
+}

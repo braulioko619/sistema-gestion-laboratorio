@@ -6,6 +6,7 @@ const PREFIJOS = {
   certificado: 'CERT',
   cotizacion: 'COT',
   muestra: 'MU',
+  aseguramiento: 'AS',
 };
 
 // Incrementa de forma atómica el correlativo (tipo, año) con un UPSERT de

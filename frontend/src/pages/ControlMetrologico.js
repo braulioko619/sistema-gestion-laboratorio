@@ -3,6 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceDot, ReferenceLine,
 } from 'recharts';
 import { equipmentAPI, usersAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './ControlMetrologico.css';
 
 // Esta pestaña reutiliza el mismo motor de hoja de vida / eventos / historial
@@ -45,6 +46,33 @@ const CATEGORIAS_DOC = {
   certificado_calibracion: 'Certificado de calibración',
   otro: 'Otro',
 };
+
+// Firma de revisión del documento (certificado, verificación u otro).
+const ESTADOS_FIRMA = {
+  pendiente: 'Pendiente de revisión',
+  aprobado: 'Aprobado',
+  rechazado: 'Rechazado',
+};
+
+// Debe coincidir con ROLES_FIRMA_DOCUMENTO en backend/src/routes/equipment.routes.js.
+// Aquí solo decide si se muestran los botones; quien manda es el backend.
+const ROLES_FIRMA = ['administrador', 'jefe_laboratorio', 'personal_calidad'];
+
+// El backend entrega el rol como texto en el login y como objeto en el perfil SSO.
+function nombreDelRol(user) {
+  if (!user) return null;
+  if (typeof user.rol === 'string') return user.rol;
+  return user.rol?.nombre || null;
+}
+
+// Qué se puede mostrar en pantalla y qué solo se puede descargar.
+function tipoDeVista(tipoMime, nombre = '') {
+  const mime = (tipoMime || '').toLowerCase();
+  if (mime === 'application/pdf' || nombre.toLowerCase().endsWith('.pdf')) return 'pdf';
+  if (mime.startsWith('image/')) return 'imagen';
+  if (mime.startsWith('text/')) return 'texto';
+  return null;
+}
 
 const TABS_DETALLE = [
   { key: 'hoja', label: 'Hoja de vida' },
@@ -188,6 +216,17 @@ function ControlMetrologico() {
   const [showDocForm, setShowDocForm] = useState(false);
   const [formDoc, setFormDoc] = useState(FORM_DOC_VACIO);
   const [docFiles, setDocFiles] = useState(null);
+
+  // Visor de documentos y firma de revisión.
+  const [visor, setVisor] = useState(null);
+  const [firmaDoc, setFirmaDoc] = useState(null);
+  const [firmaEstado, setFirmaEstado] = useState('aprobado');
+  const [firmaComentario, setFirmaComentario] = useState('');
+  const [firmaError, setFirmaError] = useState(null);
+  const [firmando, setFirmando] = useState(false);
+
+  const { user } = useAuth();
+  const puedeFirmar = ROLES_FIRMA.includes(nombreDelRol(user));
 
   const objectUrlsRef = useRef([]);
 
@@ -475,6 +514,67 @@ function ControlMetrologico() {
     } catch (err) {
       setError('Error al descargar el documento');
       console.error(err);
+    }
+  };
+
+  // Abre el archivo en un visor dentro de la app. Se pide con el token del
+  // usuario y se muestra desde un blob: así no hace falta exponer el archivo
+  // en una URL pública.
+  const handlePreviewDocument = async (doc) => {
+    const vista = tipoDeVista(doc.tipo_mime, doc.nombre_original);
+    setVisor({ doc, vista, url: null, error: null, cargando: true });
+    try {
+      const res = await equipmentAPI.previewDocument(doc.id);
+      const blob = new Blob([res.data], { type: doc.tipo_mime || 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      setVisor({ doc, vista, url, error: null, cargando: false });
+    } catch (err) {
+      console.error(err);
+      setVisor({ doc, vista, url: null, error: 'No se pudo abrir el documento', cargando: false });
+    }
+  };
+
+  const cerrarVisor = () => {
+    setVisor((actual) => {
+      if (actual?.url) window.URL.revokeObjectURL(actual.url);
+      return null;
+    });
+  };
+
+  const abrirFirma = (doc, estado) => {
+    setFirmaDoc(doc);
+    setFirmaEstado(estado);
+    setFirmaComentario(doc.comentario_firma || '');
+    setFirmaError(null);
+  };
+
+  const cerrarFirma = () => {
+    setFirmaDoc(null);
+    setFirmaError(null);
+    setFirmaComentario('');
+  };
+
+  const handleSignDocument = async (e) => {
+    e.preventDefault();
+    if (firmaEstado === 'rechazado' && !firmaComentario.trim()) {
+      setFirmaError('Debe indicar el motivo del rechazo.');
+      return;
+    }
+    try {
+      setFirmando(true);
+      setFirmaError(null);
+      const res = await equipmentAPI.signDocument(firmaDoc.id, {
+        estado: firmaEstado,
+        comentario: firmaComentario,
+      });
+      const actualizado = res.data.data;
+      setDocumentos((prev) => prev.map((d) => (d.id === actualizado.id ? actualizado : d)));
+      cerrarFirma();
+    } catch (err) {
+      setFirmaError(err.response?.data?.error?.message || 'Error al registrar la firma');
+      console.error(err);
+    } finally {
+      setFirmando(false);
     }
   };
 
@@ -1143,7 +1243,14 @@ function ControlMetrologico() {
                   <div className="table-responsive">
                     <table>
                       <thead>
-                        <tr><th>Categoría</th><th>Nombre</th><th>Descripción</th><th>Subido por</th><th></th></tr>
+                        <tr>
+                          <th>Categoría</th>
+                          <th>Nombre</th>
+                          <th>Descripción</th>
+                          <th>Subido por</th>
+                          <th>Revisión</th>
+                          <th></th>
+                        </tr>
                       </thead>
                       <tbody>
                         {documentos.map((doc) => (
@@ -1152,7 +1259,44 @@ function ControlMetrologico() {
                             <td>{doc.nombre_original}</td>
                             <td>{doc.descripcion || '—'}</td>
                             <td>{doc.usuario?.nombre || '—'}</td>
-                            <td><button className="btn-secondary" onClick={() => handleDownloadDocument(doc)}>Descargar</button></td>
+                            <td>
+                              <span className={`badge badge-firma-${doc.estado_firma}`}>
+                                {ESTADOS_FIRMA[doc.estado_firma]}
+                              </span>
+                              {doc.estado_firma !== 'pendiente' && (
+                                <div className="cm-firma-detalle">
+                                  {doc.firmante?.nombre || '—'}
+                                  {doc.firmado_en ? ` · ${new Date(doc.firmado_en).toLocaleDateString('es-CL')}` : ''}
+                                  {doc.comentario_firma ? (
+                                    <span className="cm-firma-comentario">“{doc.comentario_firma}”</span>
+                                  ) : null}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              <div className="cm-doc-acciones">
+                                <button className="btn-secondary" onClick={() => handlePreviewDocument(doc)}>Ver</button>
+                                <button className="btn-secondary" onClick={() => handleDownloadDocument(doc)}>Descargar</button>
+                                {puedeFirmar && (
+                                  <>
+                                    <button
+                                      className="cm-btn-aprobar"
+                                      onClick={() => abrirFirma(doc, 'aprobado')}
+                                      disabled={doc.estado_firma === 'aprobado'}
+                                    >
+                                      ✓ Aprobar
+                                    </button>
+                                    <button
+                                      className="cm-btn-rechazar"
+                                      onClick={() => abrirFirma(doc, 'rechazado')}
+                                      disabled={doc.estado_firma === 'rechazado'}
+                                    >
+                                      ✕ Rechazar
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1161,6 +1305,102 @@ function ControlMetrologico() {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Visor de documentos: muestra el archivo sin salir del sistema. */}
+      {visor && (
+        <div className="cm-visor-overlay" onClick={cerrarVisor}>
+          <div className="cm-visor" onClick={(e) => e.stopPropagation()}>
+            <div className="cm-modal-header">
+              <h2>{visor.doc.nombre_original}</h2>
+              <button className="cm-close" onClick={cerrarVisor}>✕</button>
+            </div>
+
+            <div className="cm-visor-cuerpo">
+              {visor.cargando && <div className="loader"></div>}
+
+              {visor.error && <p className="cm-fecha-vencida">{visor.error}</p>}
+
+              {!visor.cargando && !visor.error && visor.url && (
+                <>
+                  {visor.vista === 'pdf' && (
+                    <iframe title={visor.doc.nombre_original} src={visor.url} className="cm-visor-marco" />
+                  )}
+                  {visor.vista === 'imagen' && (
+                    <img src={visor.url} alt={visor.doc.nombre_original} className="cm-visor-imagen" />
+                  )}
+                  {visor.vista === 'texto' && (
+                    <iframe title={visor.doc.nombre_original} src={visor.url} className="cm-visor-marco" />
+                  )}
+                  {visor.vista === null && (
+                    <p className="cm-empty">
+                      Este tipo de archivo no se puede mostrar en pantalla. Descárgalo para abrirlo.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="cm-visor-pie">
+              <button className="btn-secondary" onClick={cerrarVisor}>Cerrar</button>
+              <button className="btn-primary" onClick={() => handleDownloadDocument(visor.doc)}>
+                Descargar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Firma de revisión del documento. */}
+      {firmaDoc && (
+        <div className="cm-modal-overlay" onClick={cerrarFirma}>
+          <div className="cm-modal cm-modal-firma" onClick={(e) => e.stopPropagation()}>
+            <div className="cm-modal-header">
+              <h2>{firmaEstado === 'aprobado' ? 'Aprobar documento' : 'Rechazar documento'}</h2>
+              <button className="cm-close" onClick={cerrarFirma}>✕</button>
+            </div>
+
+            <form onSubmit={handleSignDocument}>
+              <div className="cm-detail-grid">
+                <p><strong>Documento:</strong> {firmaDoc.nombre_original}</p>
+                <p><strong>Categoría:</strong> {CATEGORIAS_DOC[firmaDoc.categoria]}</p>
+                <p><strong>Firma como:</strong> {user?.nombre} ({nombreDelRol(user)})</p>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  {firmaEstado === 'aprobado'
+                    ? 'Observaciones (opcional):'
+                    : 'Motivo del rechazo: *'}
+                </label>
+                <textarea
+                  rows="3"
+                  value={firmaComentario}
+                  onChange={(e) => setFirmaComentario(e.target.value)}
+                  placeholder={firmaEstado === 'aprobado'
+                    ? 'Ej: Certificado conforme, trazabilidad verificada'
+                    : 'Ej: El certificado no indica la incertidumbre expandida'}
+                  required={firmaEstado === 'rechazado'}
+                />
+              </div>
+
+              {firmaError && <div className="alert alert-danger">{firmaError}</div>}
+
+              <div className="cm-firma-acciones">
+                <button type="button" className="btn-secondary" onClick={cerrarFirma}>Cancelar</button>
+                <button
+                  type="submit"
+                  className={firmaEstado === 'aprobado' ? 'cm-btn-aprobar' : 'cm-btn-rechazar'}
+                  disabled={firmando}
+                >
+                  {firmando
+                    ? 'Registrando…'
+                    : firmaEstado === 'aprobado' ? '✓ Confirmar aprobación' : '✕ Confirmar rechazo'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

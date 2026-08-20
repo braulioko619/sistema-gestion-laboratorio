@@ -554,3 +554,156 @@
 .badge-cot-aceptada { background: #eafaf1; color: #1e8449; }
 .badge-cot-rechazada { background: #fdecea; color: #c0392b; }
 .badge-cot-anulada { background: #f2f3f4; color: #566573; }
+
+/* ==========================================================================
+   Aseguramiento de la validez de los resultados (NCh-ISO/IEC 17025 §7.7)
+   ========================================================================== */
+
+.aseg-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.aseg-kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 16px 12px;
+  border: 1px solid #d6e4e3;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(11, 59, 55, 0.07);
+}
+
+.aseg-kpi-valor {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #0b3b37;
+}
+
+.aseg-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #5c6f6d;
+  text-align: center;
+}
+
+.aseg-kpi-alerta .aseg-kpi-valor {
+  color: #c0392b;
+}
+
+.aseg-subtitulo {
+  margin: 20px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e3f2f1;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #5c6f6d;
+}
+
+.aseg-ayuda {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #5c6f6d;
+}
+
+.aseg-vencida {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #c0392b;
+}
+
+.aseg-nc {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border-left: 4px solid #c0392b;
+  background: #fdf1f0;
+  font-size: 13.5px;
+}
+
+.aseg-nc p {
+  margin-bottom: 10px;
+}
+
+/* Vista de programación, agrupada por mes. */
+.aseg-programa {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.aseg-mes-titulo {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #0b3b37;
+}
+
+.aseg-mes-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.aseg-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid #d6e4e3;
+  border-left: 4px solid #00857d;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.aseg-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(11, 59, 55, 0.14);
+}
+
+.aseg-item-conforme { border-left-color: #16a34a; }
+.aseg-item-no_conforme { border-left-color: #c0392b; }
+.aseg-item-no_concluyente { border-left-color: #f39c12; }
+
+.aseg-item-codigo {
+  font-weight: 700;
+  font-size: 13px;
+  color: #0b3b37;
+}
+
+.aseg-item-tipo {
+  font-size: 12px;
+  color: #16302d;
+}
+
+.aseg-item-fecha {
+  font-size: 11px;
+  color: #5c6f6d;
+}
+
+/* Insignias de estado y resultado */
+.badge-aseg-planificada { background: #e3f2f1; color: #00655f; }
+.badge-aseg-en_ejecucion { background: #fdf0d5; color: #8a6100; }
+.badge-aseg-ejecutada { background: #dbeafe; color: #1e40af; }
+.badge-aseg-cancelada { background: #e5e7eb; color: #4b5563; }
+
+.badge-aseg-pendiente { background: #fdf0d5; color: #8a6100; }
+.badge-aseg-conforme { background: #d8f3e4; color: #146c43; }
+.badge-aseg-no_conforme { background: #fbdcd9; color: #a32b1c; }
+.badge-aseg-no_concluyente { background: #fde8cd; color: #92400e; }
