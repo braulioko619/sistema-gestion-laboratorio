@@ -1,0 +1,1198 @@
+/* ==========================================================================
+   Lenor UI — capa estética común del sistema.
+
+   Lleva el lenguaje visual de la portada (Home) al resto de las páginas,
+   pestañas y ventanas emergentes sin tocar el JSX: reestiliza las clases que
+   ya existen en cada módulo, agrupadas por familia.
+
+   Se importa AL FINAL en App.js, después de index.css y de los CSS de cada
+   página, para que sus reglas tengan la última palabra.
+
+   Paleta institucional: verde profundo #0b3b37, turquesa #00857d,
+   turquesa vivo #19b3a6, turquesa claro #e3f2f1.
+   ========================================================================== */
+
+:root {
+  --lnr-deep: #0b3b37;
+  --lnr-teal: #00857d;
+  --lnr-bright: #19b3a6;
+  --lnr-soft: #e3f2f1;
+  --lnr-line: #d6e4e3;
+  --lnr-ink: #16302d;
+  --lnr-muted: #5c6f6d;
+  --lnr-surface: #ffffff;
+  --lnr-canvas: #f4f8f8;
+
+  --lnr-gradient: linear-gradient(125deg, var(--lnr-deep) 0%, #0a544d 48%, var(--lnr-teal) 100%);
+  --lnr-gradient-soft: linear-gradient(120deg, var(--lnr-teal), var(--lnr-bright));
+
+  --lnr-shadow-sm: 0 2px 10px rgba(11, 59, 55, 0.07);
+  --lnr-shadow-md: 0 12px 28px rgba(11, 59, 55, 0.14);
+  --lnr-shadow-lg: 0 26px 60px rgba(11, 59, 55, 0.38);
+
+  --lnr-radius: 14px;
+  --lnr-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Isotipo Lenor en blanco, para usar como marca de agua sobre degradados. */
+  --lnr-mark: url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 900' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='730' y='100' width='240' height='990' rx='45' transform='rotate(45 850 100)' fill='%23ffffff'/%3E%3Crect x='120' y='610' width='920' height='240' rx='45' fill='%23ffffff'/%3E%3Cpolygon points='1000,600 1180,730 1000,860' fill='%23ffffff'/%3E%3C/svg%3E");
+}
+
+@keyframes lnr-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes lnr-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lnr-pop {
+  from { opacity: 0; transform: translateY(24px) scale(0.95); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes lnr-shine {
+  0%   { transform: translateX(-100%); }
+  55%  { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes lnr-slide-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   1. Contenedores de página
+   ========================================================================== */
+
+/* Los contenedores de página NO se animan, a propósito.
+   Cada modal se renderiza dentro de su contenedor, y tanto un `transform`
+   como una `opacity` menor que 1 convierten al contenedor en bloque
+   contenedor / contexto de apilamiento. Con eso, el overlay `position: fixed`
+   del modal se ancla al contenedor y su `z-index: 1000` deja de competir
+   contra la barra superior, que termina tapándolo.
+   El movimiento de entrada lo aportan el encabezado, las tarjetas y la tabla,
+   que no contienen modales. */
+
+/* ==========================================================================
+   2. Encabezado de página — franja con degradado institucional
+   ========================================================================== */
+
+.cal-header,
+.cm-header,
+.eq-header,
+.documents-header,
+.quality-header,
+.nc-header,
+.pers-header,
+.ia-header,
+.audit-header {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 22px 26px;
+  margin-bottom: 22px;
+  border-radius: 18px;
+  color: #fff;
+  background: var(--lnr-gradient);
+  box-shadow: var(--lnr-shadow-md);
+}
+
+/* Marca de agua con el isotipo Lenor. */
+.cal-header::before,
+.cm-header::before,
+.eq-header::before,
+.documents-header::before,
+.quality-header::before,
+.nc-header::before,
+.pers-header::before,
+.ia-header::before,
+.audit-header::before {
+  content: '';
+  position: absolute;
+  right: -30px;
+  bottom: -70px;
+  width: 210px;
+  height: 160px;
+  background: var(--lnr-mark) no-repeat right bottom / contain;
+  opacity: 0.10;
+  pointer-events: none;
+}
+
+/* Destello diagonal que recorre la franja. */
+.cal-header::after,
+.cm-header::after,
+.eq-header::after,
+.documents-header::after,
+.quality-header::after,
+.nc-header::after,
+.pers-header::after,
+.ia-header::after,
+.audit-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.14) 50%, transparent 62%);
+  transform: translateX(-100%);
+  animation: lnr-shine 8s ease-in-out 1s infinite;
+}
+
+.cal-header h1,
+.cm-header h1,
+.eq-header h1,
+.documents-header h1,
+.quality-header h1,
+.nc-header h1,
+.pers-header h1,
+.ia-header h1,
+.audit-header h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+}
+
+/* Subtítulo bajo el título (Control Metrológico). */
+.cm-header + .cm-subtitle,
+.cm-subtitle {
+  color: var(--lnr-muted);
+}
+
+/* Los botones dentro de la franja pasan a ser "de vidrio" para no competir
+   con el degradado. */
+.cal-header button,
+.cm-header button,
+.eq-header button,
+.documents-header button,
+.quality-header button,
+.nc-header button,
+.pers-header button,
+.ia-header button,
+.audit-header button {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  padding: 9px 20px;
+  font-weight: 600;
+  font-size: 13.5px;
+  backdrop-filter: blur(6px);
+  box-shadow: none;
+  transition: background-color 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+
+.cal-header button:hover,
+.cm-header button:hover,
+.eq-header button:hover,
+.documents-header button:hover,
+.quality-header button:hover,
+.nc-header button:hover,
+.pers-header button:hover,
+.ia-header button:hover,
+.audit-header button:hover {
+  background: rgba(255, 255, 255, 0.30);
+  border-color: rgba(255, 255, 255, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.audit-header .export-buttons {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   3. Botones generales
+   ========================================================================== */
+
+button.btn-primary,
+.btn-primary {
+  background: var(--lnr-gradient-soft);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(11, 59, 55, 0.20);
+  transition: transform 0.25s var(--lnr-ease), box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+button.btn-primary:hover,
+.btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: 0 12px 24px rgba(11, 59, 55, 0.28);
+}
+
+button.btn-secondary,
+.btn-secondary {
+  background: var(--lnr-soft);
+  color: var(--lnr-deep);
+  border: 1px solid rgba(0, 133, 125, 0.24);
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-weight: 600;
+  transition: transform 0.25s var(--lnr-ease), background-color 0.25s ease, border-color 0.25s ease;
+}
+
+button.btn-secondary:hover,
+.btn-secondary:hover {
+  background: #d3ebe8;
+  border-color: var(--lnr-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(11, 59, 55, 0.14);
+}
+
+button.btn-danger,
+.btn-danger {
+  background: linear-gradient(120deg, #c0392b, #e74c3c);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(192, 57, 43, 0.24);
+}
+
+button.btn-danger:hover,
+.btn-danger:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+/* Paginación. */
+.pagination button {
+  background: var(--lnr-soft);
+  color: var(--lnr-deep);
+  border: 1px solid rgba(0, 133, 125, 0.24);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-weight: 600;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #d3ebe8;
+  border-color: var(--lnr-teal);
+}
+
+/* Cualquier botón deshabilitado se ve apagado, nunca "levantado". */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+}
+
+button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.35);
+}
+
+/* Botones de acción pequeños dentro de tablas y listados. */
+.pers-btn-revocar,
+.cal-upload-btn,
+.ia-eval-btn {
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: transform 0.22s var(--lnr-ease), filter 0.22s ease, box-shadow 0.22s ease;
+}
+
+.pers-btn-revocar:hover,
+.cal-upload-btn:hover,
+.ia-eval-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 14px rgba(11, 59, 55, 0.18);
+}
+
+/* Botones que en realidad son enlaces dentro de tablas y detalles. */
+.cal-link-btn,
+.ia-link-btn,
+.sched-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--lnr-teal);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  box-shadow: none;
+}
+
+.cal-link-btn:hover,
+.ia-link-btn:hover,
+.sched-link-btn:hover {
+  color: var(--lnr-deep);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   4. Tarjetas y paneles de formulario
+   ========================================================================== */
+
+.card,
+.cal-form,
+.cm-form,
+.eq-form,
+.ia-form,
+.nc-form,
+.pers-form,
+.quality-form,
+.document-form,
+.ia-finding-form,
+.eq-evento-form,
+.cal-inline-form {
+  position: relative;
+  background: var(--lnr-surface);
+  border: 1px solid var(--lnr-line);
+  border-radius: var(--lnr-radius);
+  box-shadow: var(--lnr-shadow-sm);
+}
+
+/* Los paneles de formulario se abren con una animación y llevan una barra de
+   acento arriba, igual que las tarjetas de la portada. */
+.cal-form,
+.cm-form,
+.eq-form,
+.ia-form,
+.nc-form,
+.pers-form,
+.quality-form,
+.document-form,
+.ia-finding-form,
+.eq-evento-form {
+  overflow: hidden;
+  padding: 24px;
+  animation: lnr-rise 0.4s var(--lnr-ease) both;
+}
+
+.cal-form::before,
+.cm-form::before,
+.eq-form::before,
+.ia-form::before,
+.nc-form::before,
+.pers-form::before,
+.quality-form::before,
+.document-form::before,
+.ia-finding-form::before,
+.eq-evento-form::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--lnr-gradient-soft);
+}
+
+.cal-form h2,
+.cm-form h2,
+.eq-form h2,
+.ia-form h2,
+.nc-form h2,
+.pers-form h2,
+.quality-form h2,
+.document-form h2,
+.ia-finding-form h2,
+.eq-evento-form h2,
+.card > h2 {
+  color: var(--lnr-deep);
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   5. Pestañas
+   ========================================================================== */
+
+/* Todas las pestañas visibles de una vez: nunca scroll horizontal. Caben en
+   una fila en pantalla de escritorio y bajan a una segunda fila cuando la
+   ventana es angosta, en vez de esconderse detrás de un desplazamiento. */
+.cal-tabs,
+.cm-tabs,
+.ia-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 5px;
+  border: 1px solid var(--lnr-line);
+  border-radius: 18px;
+  background: var(--lnr-surface);
+  box-shadow: var(--lnr-shadow-sm);
+}
+
+.cal-tab,
+.cm-tab,
+.ia-tab {
+  position: relative;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lnr-muted);
+  box-shadow: none;
+  transition: color 0.25s ease, background-color 0.25s ease, transform 0.25s var(--lnr-ease);
+}
+
+.cal-tab:hover,
+.cm-tab:hover,
+.ia-tab:hover {
+  color: var(--lnr-deep);
+  background: var(--lnr-soft);
+  transform: none;
+  box-shadow: none;
+}
+
+.cal-tab.active,
+.cm-tab.active,
+.ia-tab.active {
+  color: #fff;
+  background: var(--lnr-gradient-soft);
+  border: none;
+  box-shadow: 0 6px 16px rgba(11, 59, 55, 0.24);
+  animation: lnr-fade 0.3s ease both;
+}
+
+/* Sub-pestañas dentro de un módulo: más discretas. */
+.cal-tabs.cal-subtabs {
+  box-shadow: none;
+  background: var(--lnr-canvas);
+}
+
+.cm-tab-panel,
+.cal-tab-panel {
+  animation: lnr-rise 0.35s var(--lnr-ease) both;
+}
+
+/* ==========================================================================
+   6. Tablas
+   ========================================================================== */
+
+.table-responsive {
+  overflow-x: auto;
+  border: 1px solid var(--lnr-line);
+  border-radius: var(--lnr-radius);
+  background: var(--lnr-surface);
+  box-shadow: var(--lnr-shadow-sm);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table thead {
+  background: var(--lnr-soft);
+  border-bottom: 2px solid rgba(0, 133, 125, 0.22);
+}
+
+table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--lnr-deep);
+}
+
+/* El `nowrap` solo donde hay scroll horizontal disponible. En una tabla suelta
+   (p. ej. la matriz de autorizaciones dentro de una tarjeta angosta) forzaría
+   el desborde en vez de repartir el ancho. */
+.table-responsive table th {
+  white-space: nowrap;
+}
+
+table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #edf4f3;
+  font-size: 13.5px;
+  color: var(--lnr-ink);
+}
+
+table tbody tr {
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+table tbody tr:hover {
+  background-color: #f3faf9;
+}
+
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Filas clicables de los módulos. */
+.cal-row,
+.cm-row,
+.eq-row {
+  cursor: pointer;
+}
+
+.cal-row:hover,
+.cm-row:hover,
+.eq-row:hover {
+  background-color: var(--lnr-soft);
+  box-shadow: inset 3px 0 0 var(--lnr-teal);
+}
+
+/* --------------------------------------------------------------------------
+   Matriz de autorizaciones (dentro de la tarjeta de cada documento).
+
+   Vive en un contenedor angosto, así que va compacta a propósito: nada de
+   tarjeta-dentro-de-tarjeta ni celdas anchas.
+   -------------------------------------------------------------------------- */
+
+.document-card {
+  border: 1px solid var(--lnr-line);
+  border-radius: var(--lnr-radius);
+  box-shadow: var(--lnr-shadow-sm);
+}
+
+.document-card:hover {
+  box-shadow: var(--lnr-shadow-md);
+}
+
+/* Con las autorizaciones abiertas, la tarjeta ocupa la fila completa: la
+   matriz no cabe con holgura en una columna de 300 px. Si el navegador no
+   soporta :has(), la tabla simplemente se desplaza dentro de la tarjeta. */
+.document-card:has(.authorization-matrix) {
+  grid-column: 1 / -1;
+}
+
+.authorization-matrix {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid var(--lnr-line);
+  border-radius: 12px;
+  background: var(--lnr-canvas);
+}
+
+/* Formulario en línea: se reparte el ancho y baja de línea si no cabe. */
+.authorization-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+/* Con tope de ancho: en fila completa, sin él los campos se estiran
+   desproporcionadamente y el botón queda desprendido al otro extremo. */
+.authorization-form select {
+  flex: 1 1 200px;
+  max-width: 340px;
+  min-width: 0;
+}
+
+.authorization-form input[type='date'] {
+  flex: 0 1 180px;
+  min-width: 0;
+}
+
+.authorization-form input,
+.authorization-form select {
+  margin-bottom: 0;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.authorization-form .btn-primary {
+  flex: 0 0 auto;
+  padding: 9px 18px;
+  font-size: 13px;
+}
+
+/* La tabla se desplaza sola si el contenedor queda muy angosto. */
+.authorization-matrix {
+  overflow-x: auto;
+}
+
+.matrix-table {
+  width: 100%;
+  min-width: 0;
+}
+
+.matrix-table th,
+.matrix-table td {
+  padding: 8px 10px;
+  font-size: 12.5px;
+  vertical-align: middle;
+  white-space: normal;
+}
+
+.matrix-table th {
+  font-size: 10.5px;
+}
+
+.matrix-table td:first-child {
+  word-break: break-word;
+}
+
+/* Botón "Revocar": versión compacta, no la píldora grande. */
+.matrix-table .btn-danger {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   7. Insignias
+   ========================================================================== */
+
+.badge,
+[class*='badge-'] {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  line-height: 1.7;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   8. Filtros y campos
+   ========================================================================== */
+
+.cm-filters,
+.eq-filters,
+.nc-filters,
+.ia-filters,
+.cal-filtros,
+.sched-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 18px;
+  border: 1px solid var(--lnr-line);
+  /* Radio moderado, no píldora: algunas barras traen etiquetas sobre los
+     campos y ocupan dos líneas. */
+  border-radius: 16px;
+  background: var(--lnr-surface);
+  box-shadow: var(--lnr-shadow-sm);
+}
+
+.cm-filters select,
+.eq-filters select,
+.nc-filters select,
+.ia-filters select,
+.cal-filtros select,
+.cal-filtros input,
+.sched-filtros select {
+  width: auto;
+  margin-bottom: 0;
+  border-radius: 999px;
+  padding: 7px 14px;
+}
+
+input,
+textarea,
+select {
+  border-radius: 10px;
+  border: 1px solid var(--lnr-line);
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--lnr-teal);
+  box-shadow: 0 0 0 4px rgba(0, 133, 125, 0.14);
+}
+
+/* ==========================================================================
+   9. Ventanas emergentes (equipos, cotizaciones, órdenes, personal, etc.)
+   ========================================================================== */
+
+.cal-modal-overlay,
+.cm-modal-overlay,
+.eq-modal-overlay,
+.ia-modal-overlay,
+.nc-modal-overlay,
+.pers-modal-overlay,
+.sched-modal-overlay {
+  position: fixed;
+  inset: 0;
+  /* Por encima de la barra superior, que usa z-index: 100. */
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  /* flex-start + `margin: auto` en el panel (ver abajo): así queda centrado
+     cuando cabe, y cuando no cabe se ancla arriba y se puede desplazar
+     completo. Con `align-items: center` el borde superior de un modal alto
+     queda recortado y fuera de alcance. */
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  background: rgba(11, 59, 55, 0.55);
+  backdrop-filter: blur(5px);
+  animation: lnr-fade 0.25s ease both;
+}
+
+.cal-modal,
+.cm-modal,
+.eq-modal,
+.ia-modal,
+.nc-modal,
+.pers-modal,
+.sched-modal {
+  position: relative;
+  width: 100%;
+  /* Centra verticalmente cuando hay espacio; si el modal es más alto que la
+     ventana, se comporta como flex-start y no recorta nada. */
+  margin: auto;
+  padding: 26px;
+  border: none;
+  border-radius: 20px;
+  background: var(--lnr-surface);
+  box-shadow: var(--lnr-shadow-lg);
+  animation: lnr-pop 0.4s var(--lnr-ease) both;
+  /* El que desplaza es el overlay, no el panel: así la cabecera conserva su
+     sangrado y las tablas internas manejan su propio scroll horizontal. */
+  max-height: none;
+  overflow: visible;
+}
+
+/* Tablas anchas dentro de un modal: se desplazan solas en vez de recortarse. */
+.cal-modal .table-responsive,
+.cm-modal .table-responsive,
+.eq-modal .table-responsive,
+.ia-modal .table-responsive,
+.nc-modal .table-responsive,
+.pers-modal .table-responsive,
+.sched-modal .table-responsive {
+  max-width: 100%;
+}
+
+/* Los módulos con tablas anchas necesitan más ancho útil. */
+.cal-modal { max-width: 1080px; }
+.cm-modal  { max-width: 1040px; }
+.eq-modal  { max-width: 980px; }
+.ia-modal  { max-width: 940px; }
+.nc-modal  { max-width: 760px; }
+.pers-modal { max-width: 760px; }
+.sched-modal { max-width: 640px; }
+
+/* Cabecera a sangre completa con el degradado institucional.
+   Solo la cabecera directa del modal: `.cm-modal-header` se reutiliza dentro
+   de las pestañas del detalle como encabezado de sección, y ahí una segunda
+   franja con degradado se ve como un encabezado duplicado. */
+.cal-modal > .cal-modal-header,
+.cm-modal > .cm-modal-header,
+.cm-visor > .cm-modal-header,
+.eq-modal > .eq-modal-header,
+.ia-modal > .ia-modal-header,
+.nc-modal > .nc-modal-header,
+.pers-modal > .pers-modal-header,
+.sched-modal > .sched-modal-header {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin: -26px -26px 22px;
+  padding: 22px 26px;
+  border-radius: 20px 20px 0 0;
+  color: #fff;
+  background: var(--lnr-gradient);
+}
+
+.cal-modal > .cal-modal-header::before,
+.cm-modal > .cm-modal-header::before,
+.cm-visor > .cm-modal-header::before,
+.eq-modal > .eq-modal-header::before,
+.ia-modal > .ia-modal-header::before,
+.nc-modal > .nc-modal-header::before,
+.pers-modal > .pers-modal-header::before,
+.sched-modal > .sched-modal-header::before {
+  content: '';
+  position: absolute;
+  right: -24px;
+  bottom: -56px;
+  width: 180px;
+  height: 140px;
+  background: var(--lnr-mark) no-repeat right bottom / contain;
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+.cal-modal > .cal-modal-header h2,
+.cm-modal > .cm-modal-header h2,
+.cm-visor > .cm-modal-header h2,
+.eq-modal > .eq-modal-header h2,
+.ia-modal > .ia-modal-header h2,
+.nc-modal > .nc-modal-header h2,
+.pers-modal > .pers-modal-header h2,
+.sched-modal > .sched-modal-header h2,
+.sched-modal > .sched-modal-header h3 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff;
+}
+
+/* Insignias y notas dentro de la cabecera, en versión "de vidrio". */
+.cal-modal-header .badge,
+.cm-modal-header .badge,
+.eq-modal-header .badge,
+.ia-modal-header .badge,
+.nc-modal-header .badge,
+.pers-modal-header .badge,
+.ia-modal-header [class*='badge-'],
+.pers-modal-header .pers-rol {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  font-weight: 600;
+}
+
+.pers-modal-header .pers-rol {
+  border: none;
+  background: none !important;
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+/* Cuando `.cm-modal-header` se reutiliza dentro de una pestaña del detalle,
+   es un encabezado de sección, no la cabecera del modal. */
+.cm-tab-panel .cm-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0 0 8px;
+  border-bottom: 2px solid var(--lnr-soft);
+  background: none;
+  color: inherit;
+}
+
+.cm-tab-panel .cm-modal-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--lnr-muted);
+}
+
+/* Botón de cierre circular que gira al pasar el cursor. */
+.cal-close,
+.cm-close,
+.eq-close,
+.ia-close,
+.nc-close,
+.pers-close,
+.sched-close {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 15px;
+  line-height: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: none;
+  transition: background-color 0.25s ease, transform 0.3s var(--lnr-ease);
+}
+
+.cal-close:hover,
+.cm-close:hover,
+.eq-close:hover,
+.ia-close:hover,
+.nc-close:hover,
+.pers-close:hover,
+.sched-close:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: rotate(90deg);
+  box-shadow: none;
+}
+
+/* Cuadrícula de datos del detalle. */
+.cal-detail-grid,
+.cm-detail-grid,
+.eq-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.cal-detail-grid p,
+.cm-detail-grid p,
+.eq-detail-grid p {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border-left: 3px solid var(--lnr-teal);
+  background: var(--lnr-canvas);
+  font-size: 13px;
+  line-height: 1.5;
+  animation: lnr-slide-in 0.35s var(--lnr-ease) both;
+}
+
+.cal-detail-grid p strong,
+.cm-detail-grid p strong,
+.eq-detail-grid p strong {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--lnr-muted);
+  margin-bottom: 2px;
+}
+
+/* Bloques de acciones dentro del modal. */
+.cal-estado-actions,
+.cal-cert-actions,
+.cal-doc-actions,
+.ia-actions,
+.nc-actions,
+.cal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.cal-estado-actions {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--lnr-line);
+  border-top: 1px solid var(--lnr-line);
+  border-bottom: 1px solid var(--lnr-line);
+  border-radius: 12px;
+  background: var(--lnr-canvas);
+}
+
+/* Secciones internas con título. */
+.cal-section-header,
+.ia-section-header,
+.pers-section-header,
+.eq-eventos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--lnr-soft);
+}
+
+.cal-section-header h3,
+.ia-section-header h3,
+.pers-section-header h3,
+.eq-eventos-header h3,
+.cal-section-header h4,
+.ia-section-header h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--lnr-muted);
+}
+
+/* ==========================================================================
+   9b. Inicio de sesión
+   ========================================================================== */
+
+.login-container {
+  position: relative;
+  overflow: hidden;
+  background: var(--lnr-gradient);
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  right: -80px;
+  bottom: -140px;
+  width: 520px;
+  height: 400px;
+  background: var(--lnr-mark) no-repeat right bottom / contain;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  border-radius: 20px;
+  box-shadow: 0 28px 60px rgba(11, 59, 55, 0.38);
+  animation: lnr-pop 0.5s var(--lnr-ease) both;
+}
+
+.login-card h1 {
+  color: var(--lnr-deep);
+}
+
+.form-group input {
+  border-radius: 10px;
+}
+
+.btn-login {
+  background: var(--lnr-gradient-soft);
+  border-radius: 999px;
+  box-shadow: 0 10px 22px rgba(11, 59, 55, 0.24);
+  transition: transform 0.25s var(--lnr-ease), filter 0.25s ease;
+}
+
+.btn-login:hover:not(:disabled) {
+  background: var(--lnr-gradient-soft);
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+/* Lleva también .btn-login, así que hay que reponer su fondo oscuro. */
+.btn-microsoft {
+  background: #2f2f2f;
+  border-radius: 999px;
+  padding: 11px;
+  font-weight: 600;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.20);
+  transition: transform 0.25s var(--lnr-ease), background-color 0.25s ease;
+}
+
+.btn-microsoft:hover {
+  background: #1f1f1f;
+  transform: translateY(-2px);
+  filter: none;
+}
+
+/* ==========================================================================
+   10. Avisos
+   ========================================================================== */
+
+.alert {
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 13.5px;
+  animation: lnr-rise 0.3s var(--lnr-ease) both;
+}
+
+.cal-alertas,
+.eq-alertas {
+  border-radius: 12px;
+}
+
+/* ==========================================================================
+   11. Menos movimiento si el sistema lo pide
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   12. Pantallas angostas
+   ========================================================================== */
+
+@media (max-width: 620px) {
+  .cal-header,
+  .cm-header,
+  .eq-header,
+  .documents-header,
+  .quality-header,
+  .nc-header,
+  .pers-header,
+  .ia-header,
+  .audit-header {
+    padding: 18px 20px;
+    align-items: flex-start;
+  }
+
+  .cal-header h1,
+  .cm-header h1,
+  .eq-header h1,
+  .documents-header h1,
+  .quality-header h1,
+  .nc-header h1,
+  .pers-header h1,
+  .ia-header h1,
+  .audit-header h1 {
+    font-size: 20px;
+  }
+
+  .cal-modal,
+  .cm-modal,
+  .eq-modal,
+  .ia-modal,
+  .nc-modal,
+  .pers-modal,
+  .sched-modal {
+    padding: 18px;
+  }
+
+  .cal-modal-header,
+  .cm-modal-header,
+  .eq-modal-header,
+  .ia-modal-header,
+  .nc-modal-header,
+  .pers-modal-header,
+  .sched-modal-header {
+    margin: -18px -18px 18px;
+    padding: 18px;
+  }
+
+  .cal-tabs,
+  .cm-tabs,
+  .ia-tabs {
+    border-radius: 16px;
+  }
+}

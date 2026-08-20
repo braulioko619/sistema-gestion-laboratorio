@@ -15,6 +15,9 @@ import Audit from './pages/Audit';
 import Calibraciones from './pages/Calibraciones';
 import ControlMetrologico from './pages/ControlMetrologico';
 import './index.css';
+// Capa estética común del sistema. Va al final a propósito: sus reglas deben
+// tener la última palabra sobre index.css y sobre el CSS de cada página.
+import './styles/lenor-ui.css';
 
 function App() {
   const { user, loading } = useAuth();
